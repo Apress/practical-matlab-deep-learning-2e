@@ -1,0 +1,186 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Simulate level flight above Titan</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="LevelFlight.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Simulate level flight above Titan</h1><!--introduction--><p>See also RHS2DAero, Simulation2DAero, fminsearch</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Constants</a></li><li><a href="#2">Get the default data structure</a></li><li><a href="#3">Compute the flight conditions and the controls</a></li><li><a href="#4">Run the simulation</a></li><li><a href="#5">Print out the parameters</a></li><li><a href="#6">Cost for fminsearch</a></li><li><a href="#7">Copyright</a></li></ul></div><h2 id="1">Constants</h2><pre class="codeinput">rTitan    = 2575;
+mu        = 9.142117352579678e+03;
+kMToM     = 1000;
+</pre><h2 id="2">Get the default data structure</h2><pre class="codeinput">d         = RHS2DAero;
+</pre><h2 id="3">Compute the flight conditions and the controls</h2><pre class="codeinput"><span class="comment">% Aircraft and flight parameters</span>
+d.mass    = 2000; <span class="comment">% kg</span>
+d.s       = 20; <span class="comment">% m^2</span>
+altitude  = 100; <span class="comment">% km</span>
+
+<span class="comment">% Find the equilibrium velocity and control</span>
+c         = [400;0.06;0]; <span class="comment">% Initial control [thrust;v;alpha]</span>
+r         = d.rPlanet + altitude;
+
+<span class="comment">% Use a numerical search</span>
+Options   = optimset;
+fun       = @(c) Cost(c,d,r);
+c         = fminsearch( fun, c, Options );
+
+d.thrust  = c(1);
+d.alpha   = c(3);
+</pre><h2 id="4">Run the simulation</h2><pre class="codeinput">n         = 2000;
+t         = linspace(0,3600,n);
+x         = [r;0;c(2)];
+u         = [d.alpha*ones(1,n);d.thrust*ones(1,n)];
+Simulation2DAero( x, t, d, u );
+subplot(311)
+title(sprintf(<span class="string">'Altitude: %g km'</span>,altitude))
+</pre><img vspace="5" hspace="5" src="LevelFlight_01.png" alt=""> <h2 id="5">Print out the parameters</h2><pre class="codeinput">fprintf(<span class="string">'Angle of attack            %8.2f deg\n'</span>,d.alpha*180/pi);
+fprintf(<span class="string">'Velocity                   %8.2f m/s\n'</span>,c(2)*kMToM);
+fprintf(<span class="string">'Thrust                     %8.2f N\n'</span>,d.thrust);
+fprintf(<span class="string">'Mass                       %8.2f kg\n'</span>,d.mass);
+fprintf(<span class="string">'Wetted area                %8.2f m^2\n'</span>,d.s);
+</pre><pre class="codeoutput">Angle of attack                0.95 deg
+Velocity                     327.79 m/s
+Thrust                       196.39 N
+Mass                        2000.00 kg
+Wetted area                   20.00 m^2
+</pre><h2 id="6">Cost for fminsearch</h2><pre class="codeinput"><span class="keyword">function</span> c = Cost( u, d, r )
+
+x(1)      = r;
+d.thrust  = u(1);
+x(3)      = u(2);
+d.alpha   = u(3);
+
+xDot      = RHS2DAero(x,0,d);
+
+c         = vecnorm(xDot);
+
+<span class="keyword">end</span>
+</pre><h2 id="7">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Simulate level flight above Titan
+% See also RHS2DAero, Simulation2DAero, fminsearch
+
+%% Constants
+rTitan    = 2575;
+mu        = 9.142117352579678e+03;
+kMToM     = 1000;
+
+%% Get the default data structure
+d         = RHS2DAero;
+
+%% Compute the flight conditions and the controls
+
+% Aircraft and flight parameters
+d.mass    = 2000; % kg
+d.s       = 20; % m^2
+altitude  = 100; % km
+
+% Find the equilibrium velocity and control
+c         = [400;0.06;0]; % Initial control [thrust;v;alpha]
+r         = d.rPlanet + altitude;
+
+% Use a numerical search
+Options   = optimset;
+fun       = @(c) Cost(c,d,r);
+c         = fminsearch( fun, c, Options );
+
+d.thrust  = c(1);
+d.alpha   = c(3);
+
+%% Run the simulation
+n         = 2000;
+t         = linspace(0,3600,n);
+x         = [r;0;c(2)];
+u         = [d.alpha*ones(1,n);d.thrust*ones(1,n)];
+Simulation2DAero( x, t, d, u );
+subplot(311)
+title(sprintf('Altitude: %g km',altitude))
+
+%% Print out the parameters
+fprintf('Angle of attack            %8.2f deg\n',d.alpha*180/pi);
+fprintf('Velocity                   %8.2f m/s\n',c(2)*kMToM);
+fprintf('Thrust                     %8.2f N\n',d.thrust);
+fprintf('Mass                       %8.2f kg\n',d.mass);
+fprintf('Wetted area                %8.2f m^2\n',d.s);
+
+%% Cost for fminsearch
+function c = Cost( u, d, r )
+
+x(1)      = r;
+d.thrust  = u(1);
+x(3)      = u(2);
+d.alpha   = u(3);
+
+xDot      = RHS2DAero(x,0,d);
+
+c         = vecnorm(xDot);
+
+end
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+##### SOURCE END #####
+--></body></html>

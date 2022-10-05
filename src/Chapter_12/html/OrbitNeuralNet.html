@@ -1,0 +1,340 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Train and test the Orbit Neural Net</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="OrbitNeuralNet.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Train and test the Orbit Neural Net</h1><!--introduction--><p>Loads the previously saved OrbitData.mat</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also:</a></li><li><a href="#2">Set up the training and test sets</a></li><li><a href="#3">Train the network</a></li><li><a href="#4">Test the network</a></li><li><a href="#5">Plot the results</a></li><li><a href="#6">Train the cascade forward network</a></li><li><a href="#7">Test the network</a></li><li><a href="#8">Plot the results</a></li><li><a href="#9">Train the feed forward network</a></li><li><a href="#10">Test the network</a></li><li><a href="#11">Plot the results</a></li><li><a href="#12">Copyright</a></li></ul></div><h2 id="1">See also:</h2><p>Orbits, fitnet, configure, train, sim, cascadeforwardnet, feedforwardnet</p><pre class="codeinput">s       = load(<span class="string">'OrbitData'</span>);
+n       = length(s.data);
+nTrain  = floor(0.9*n);
+</pre><h2 id="2">Set up the training and test sets</h2><pre class="codeinput">kTrain	= randperm(n,nTrain);
+sTrain  = s.data(kTrain);
+nSamp   = size(sTrain{1},2);
+xTrain  = zeros(nSamp,nTrain);
+aMean   = mean([s.el(:).a]);
+
+<span class="keyword">for</span> k = 1:nTrain
+  xTrain(:,k) = sTrain{k}(1,:);
+<span class="keyword">end</span>
+
+elTrain     = s.el(kTrain);
+yTrain      = [elTrain.a;elTrain.e];
+yTrain(1,:) = yTrain(1,:)/aMean; <span class="comment">% Normalize the data</span>
+kTest       = setdiff(1:n,kTrain);
+sTest       = s.data(kTest);
+nTest       = n-nTrain;
+xTest       = zeros(nSamp,nTest);
+<span class="keyword">for</span> k = 1:nTest
+  xTest(:,k) = sTest{k}(1,:);
+<span class="keyword">end</span>
+
+elTest     = s.el(kTest);
+yTest      = [elTest.a;elTest.e];
+yTest(1,:) = yTest(1,:)/aMean;
+</pre><h2 id="3">Train the network</h2><pre class="codeinput">net       = fitnet(10);
+
+net       = configure(net, xTrain, yTrain);
+net.name  = <span class="string">'Orbit'</span>;
+net       = train(net,xTrain,yTrain);
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_01.png" alt=""> <h2 id="4">Test the network</h2><pre class="codeinput">yPred      = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yTest(1,:) = yTest(1,:)*aMean;
+yM         = mean(yPred-yTest,2);
+yTM        = mean(yTest,2);
+fprintf(<span class="string">'\nFit Net\n'</span>);
+fprintf(<span class="string">'Mean semi-major axis error %12.4f (km) %12.2f %%\n'</span>,yM(1),100*abs(yM(1))/yTM(1));
+fprintf(<span class="string">'Mean eccentricity    error %12.4f      %12.2f %%\n'</span>,yM(2),100*abs(yM(2))/yTM(2));
+</pre><pre class="codeoutput">
+Fit Net
+Mean semi-major axis error      -0.1208 (km)         0.00 %
+Mean eccentricity    error      -0.0059              1.94 %
+</pre><h2 id="5">Plot the results</h2><pre class="codeinput">NewFigure(<span class="string">'Predictions using Fitnet'</span>)
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel(<span class="string">'a'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel(<span class="string">'e'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (1: Predictions using Fitnet) with properties:
+
+      Number: 1
+        Name: 'Predictions using Fitnet'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_02.png" alt=""> <h2 id="6">Train the cascade forward network</h2><pre class="codeinput">net       = cascadeforwardnet(10);
+net       = configure(net, xTrain, yTrain);
+net.name  = <span class="string">'Orbit'</span>;
+net       = train(net,xTrain,yTrain);
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_03.png" alt=""> <h2 id="7">Test the network</h2><pre class="codeinput">yPred       = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yM = mean(yPred-yTest,2);
+fprintf(<span class="string">'\nCascade Forward Net\n'</span>);
+yM          = mean(yPred-yTest,2);
+yTM         = mean(yTest,2);
+fprintf(<span class="string">'Mean semi-major axis error %12.4f (km) %12.2f %%\n'</span>,yM(1),100*abs(yM(1))/yTM(1));
+fprintf(<span class="string">'Mean eccentricity    error %12.4f      %12.2f %%\n'</span>,yM(2),100*abs(yM(2))/yTM(2));
+</pre><pre class="codeoutput">
+Cascade Forward Net
+Mean semi-major axis error     -57.0837 (km)         0.72 %
+Mean eccentricity    error      -0.0072              2.37 %
+</pre><h2 id="8">Plot the results</h2><pre class="codeinput">NewFigure(<span class="string">'Predictions using Cascade Forward Network'</span>)
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel(<span class="string">'a'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel(<span class="string">'e'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (2: Predictions using Cascade Forward Network) with properties:
+
+      Number: 2
+        Name: 'Predictions using Cascade Forward Network'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_04.png" alt=""> <h2 id="9">Train the feed forward network</h2><pre class="codeinput">net      = feedforwardnet(10);
+net      = configure(net, xTrain, yTrain);
+net.name = <span class="string">'Orbit'</span>;
+net      = train(net,xTrain,yTrain);
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_05.png" alt=""> <h2 id="10">Test the network</h2><pre class="codeinput">yPred      = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yM = mean(yPred-yTest,2);
+fprintf(<span class="string">'\nFeed Forward Net\n'</span>);
+yM  = mean(yPred-yTest,2);
+yTM = mean(yTest,2);
+fprintf(<span class="string">'Mean semi-major axis error %12.4f (km) %12.2f %%\n'</span>,yM(1),100*abs(yM(1))/yTM(1));
+fprintf(<span class="string">'Mean eccentricity    error %12.4f      %12.2f %%\n'</span>,yM(2),100*abs(yM(2))/yTM(2));
+</pre><pre class="codeoutput">
+Feed Forward Net
+Mean semi-major axis error     -21.5556 (km)         0.27 %
+Mean eccentricity    error      -0.0016              0.52 %
+</pre><h2 id="11">Plot the results</h2><pre class="codeinput">NewFigure(<span class="string">'Predictions using Feed Forward Network'</span>)
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel(<span class="string">'a'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel(<span class="string">'e'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (3: Predictions using Feed Forward Network) with properties:
+
+      Number: 3
+        Name: 'Predictions using Feed Forward Network'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="OrbitNeuralNet_06.png" alt=""> <h2 id="12">Copyright</h2><p>Copyright (c) 2019 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Train and test the Orbit Neural Net
+% Loads the previously saved OrbitData.mat
+%% See also:
+% Orbits, fitnet, configure, train, sim, cascadeforwardnet, feedforwardnet
+
+s       = load('OrbitData');
+n       = length(s.data);
+nTrain  = floor(0.9*n);
+
+%% Set up the training and test sets 
+kTrain	= randperm(n,nTrain);
+sTrain  = s.data(kTrain);
+nSamp   = size(sTrain{1},2);
+xTrain  = zeros(nSamp,nTrain);
+aMean   = mean([s.el(:).a]);
+
+for k = 1:nTrain
+  xTrain(:,k) = sTrain{k}(1,:);
+end
+
+elTrain     = s.el(kTrain);
+yTrain      = [elTrain.a;elTrain.e];
+yTrain(1,:) = yTrain(1,:)/aMean; % Normalize the data
+kTest       = setdiff(1:n,kTrain);
+sTest       = s.data(kTest);
+nTest       = n-nTrain;
+xTest       = zeros(nSamp,nTest);
+for k = 1:nTest
+  xTest(:,k) = sTest{k}(1,:);
+end
+
+elTest     = s.el(kTest);
+yTest      = [elTest.a;elTest.e];
+yTest(1,:) = yTest(1,:)/aMean;
+
+%% Train the network
+net       = fitnet(10); 
+
+net       = configure(net, xTrain, yTrain);
+net.name  = 'Orbit';
+net       = train(net,xTrain,yTrain);
+
+%% Test the network
+yPred      = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yTest(1,:) = yTest(1,:)*aMean;
+yM         = mean(yPred-yTest,2);
+yTM        = mean(yTest,2);
+fprintf('\nFit Net\n');
+fprintf('Mean semi-major axis error %12.4f (km) %12.2f %%\n',yM(1),100*abs(yM(1))/yTM(1));
+fprintf('Mean eccentricity    error %12.4f      %12.2f %%\n',yM(2),100*abs(yM(2))/yTM(2));
+
+%% Plot the results
+NewFigure('Predictions using Fitnet')
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel('a')
+legend('Predicted','True')
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel('e')
+legend('Predicted','True')
+
+
+%% Train the cascade forward network
+net       = cascadeforwardnet(10); 
+net       = configure(net, xTrain, yTrain);
+net.name  = 'Orbit';
+net       = train(net,xTrain,yTrain);
+
+%% Test the network
+yPred       = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yM = mean(yPred-yTest,2);
+fprintf('\nCascade Forward Net\n');
+yM          = mean(yPred-yTest,2);
+yTM         = mean(yTest,2);
+fprintf('Mean semi-major axis error %12.4f (km) %12.2f %%\n',yM(1),100*abs(yM(1))/yTM(1));
+fprintf('Mean eccentricity    error %12.4f      %12.2f %%\n',yM(2),100*abs(yM(2))/yTM(2));
+
+%% Plot the results
+NewFigure('Predictions using Cascade Forward Network')
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel('a')
+legend('Predicted','True')
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel('e')
+legend('Predicted','True')
+
+
+%% Train the feed forward network
+net      = feedforwardnet(10); 
+net      = configure(net, xTrain, yTrain);
+net.name = 'Orbit';
+net      = train(net,xTrain,yTrain);
+
+%% Test the network
+yPred      = sim(net,xTest);
+yPred(1,:) = yPred(1,:)*aMean;
+yM = mean(yPred-yTest,2);
+fprintf('\nFeed Forward Net\n');
+yM  = mean(yPred-yTest,2);
+yTM = mean(yTest,2);
+fprintf('Mean semi-major axis error %12.4f (km) %12.2f %%\n',yM(1),100*abs(yM(1))/yTM(1));
+fprintf('Mean eccentricity    error %12.4f      %12.2f %%\n',yM(2),100*abs(yM(2))/yTM(2));
+
+%% Plot the results
+NewFigure('Predictions using Feed Forward Network')
+subplot(2,1,1)
+bar(1:nTest,[yPred(1,:);yTest(1,:)]);
+ylabel('a')
+legend('Predicted','True')
+subplot(2,1,2)
+bar(1:nTest,[yPred(2,:);yTest(2,:)]);
+ylabel('e')
+legend('Predicted','True')
+
+%% Copyright
+% Copyright (c) 2019 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+
+
+##### SOURCE END #####
+--></body></html>

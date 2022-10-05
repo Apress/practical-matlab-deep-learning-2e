@@ -1,0 +1,254 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Torus</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="Torus.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">TORUS Vertices and faces for a torus.</a></li><li><a href="#3">Form:</a></li><li><a href="#4">Inputs</a></li><li><a href="#5">Outputs</a></li><li><a href="#7">Copyright</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [v, f] = Torus( c, r, n, c2, nuX )
+</pre><h2 id="2">TORUS Vertices and faces for a torus.</h2><p>Generates the data for drawing a torus.</p><h2 id="3">Form:</h2><pre class="language-matlab">[v, f] = Torus( c, r, n, c2, nuX )
+</pre><h2 id="4">Inputs</h2><pre class="language-matlab">c   (1,1) Major <span class="string">radius</span>
+r   (1,1) Minor <span class="string">radius</span>
+n   (1,1) Number <span class="string">of</span> <span class="string">divisions</span>
+c2  (1,1) Radius <span class="string">for</span> <span class="string">the</span> <span class="string">cut</span>
+nuX (1,1) Angular <span class="string">range</span> <span class="string">of</span> <span class="string">the</span> <span class="string">minor</span> <span class="string">angle</span>
+</pre><h2 id="5">Outputs</h2><pre class="language-matlab">v 	(n,3)	Vertices
+f   (n,3)	Faces
+</pre><pre class="codeinput"><span class="keyword">if</span>( nargin &lt; 1 )
+  <span class="comment">% Demo</span>
+  c = 1;
+  r = 0.2;
+  Torus( c, r, 8 )
+
+  Torus( c, r, [], 0.5, pi/2 + 0.01 )
+  <span class="keyword">return</span>
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>( nargin &lt; 3 )
+  n = [];
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>( isempty(n) )
+  n = 40;
+<span class="keyword">end</span>
+
+
+<span class="keyword">if</span>( nargin == 5 )
+  del   = c - c2;
+  gamma = pi - nuX;
+  r2    = sqrt(del^2 + r^2 - 2*del*r*cos(gamma));
+  alpha = acos(0.5*(del^2 + r2^2 - r^2)/(del*r2));
+  nuO   = linspace(-nuX,nuX,n/2)';
+  nuI   = linspace(alpha,-alpha,n/2)' ;
+	vXZ   = [  c +  r*cos(nuO), zeros(n/2,1),  r*sin(nuO);<span class="keyword">...</span>
+            c2 + r2*cos(nuI), zeros(n/2,1), r2*sin(nuI)];
+<span class="keyword">else</span>
+  nu  = linspace(0,2*pi,n)' - pi;
+  vXZ = [c + r*cos(nu), zeros(n,1), r*sin(nu)];
+<span class="keyword">end</span>
+
+
+phi = linspace(0,2*pi-2*pi/n,n);
+
+c   = cos(phi);
+s   = sin(phi);
+
+v   = vXZ;
+f   = [];
+j0  = 0; <span class="comment">% Start of vertices</span>
+jF  = 1;
+<span class="keyword">for</span> k = 2:n
+  b   = [c(k) s(k) 0;-s(k) c(k) 0;0 0 1];
+  vN  = (b*vXZ')';
+  v   = [v;vN];
+  <span class="keyword">for</span> j = 1:n-1
+    f(jF,:)   = j0 + [j j+1 j+1+n];
+    f(jF+1,:) = j0 + [j j+1+n j+n];
+    jF        = jF + 2;
+  <span class="keyword">end</span>
+  j0  = j0 + n;
+<span class="keyword">end</span>
+<span class="keyword">for</span> j = 1:n-1
+	f(jF,:)   = [j+j0 j+1+j0 j+1];
+	f(jF+1,:) = [j+j0 j+1 j];
+	jF        = jF + 2;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>( nargout == 0 )
+	NewFigure(<span class="string">'Torus'</span>);
+  c = [0.4 0.4 0.4];
+	shading <span class="string">flat</span>
+  lighting <span class="string">gouraud</span>
+  patch(<span class="string">'vertices'</span>,v,<span class="string">'faces'</span>,f,<span class="string">'facecolor'</span>,c,<span class="string">'edgecolor'</span>,c,<span class="string">'ambient'</span>,1,<span class="string">'facealpha'</span>,0.2);
+  axis <span class="string">image</span>
+  xlabel(<span class="string">'x'</span>)
+  ylabel(<span class="string">'y'</span>)
+  zlabel(<span class="string">'z'</span>)
+  view([0 0 1])
+  grid <span class="string">on</span>
+  rotate3d <span class="string">on</span>
+  clear <span class="string">v</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Torus_01.png" alt=""> <img vspace="5" hspace="5" src="Torus_02.png" alt=""> <h2 id="7">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [v, f] = Torus( c, r, n, c2, nuX )
+
+%% TORUS Vertices and faces for a torus.
+% Generates the data for drawing a torus.
+%% Form:
+%   [v, f] = Torus( c, r, n, c2, nuX )
+%% Inputs
+%   c   (1,1) Major radius
+%   r   (1,1) Minor radius
+%   n   (1,1) Number of divisions
+%   c2  (1,1) Radius for the cut
+%   nuX (1,1) Angular range of the minor angle 
+%% Outputs
+%   v 	(n,3)	Vertices
+%   f   (n,3)	Faces
+
+if( nargin < 1 )
+  % Demo
+  c = 1;
+  r = 0.2;
+  Torus( c, r, 8 )
+  
+  Torus( c, r, [], 0.5, pi/2 + 0.01 )
+  return
+end
+
+if( nargin < 3 )
+  n = [];
+end
+
+if( isempty(n) )
+  n = 40;
+end
+
+
+if( nargin == 5 )
+  del   = c - c2;
+  gamma = pi - nuX;
+  r2    = sqrt(del^2 + r^2 - 2*del*r*cos(gamma));
+  alpha = acos(0.5*(del^2 + r2^2 - r^2)/(del*r2));
+  nuO   = linspace(-nuX,nuX,n/2)';
+  nuI   = linspace(alpha,-alpha,n/2)' ;
+	vXZ   = [  c +  r*cos(nuO), zeros(n/2,1),  r*sin(nuO);...
+            c2 + r2*cos(nuI), zeros(n/2,1), r2*sin(nuI)];
+else
+  nu  = linspace(0,2*pi,n)' - pi;
+  vXZ = [c + r*cos(nu), zeros(n,1), r*sin(nu)];
+end
+
+
+phi = linspace(0,2*pi-2*pi/n,n);
+
+c   = cos(phi);
+s   = sin(phi);
+
+v   = vXZ;
+f   = [];
+j0  = 0; % Start of vertices
+jF  = 1;
+for k = 2:n
+  b   = [c(k) s(k) 0;-s(k) c(k) 0;0 0 1];
+  vN  = (b*vXZ')';
+  v   = [v;vN];
+  for j = 1:n-1
+    f(jF,:)   = j0 + [j j+1 j+1+n];
+    f(jF+1,:) = j0 + [j j+1+n j+n];
+    jF        = jF + 2;
+  end
+  j0  = j0 + n;
+end
+for j = 1:n-1
+	f(jF,:)   = [j+j0 j+1+j0 j+1];
+	f(jF+1,:) = [j+j0 j+1 j];
+	jF        = jF + 2;
+end
+
+if( nargout == 0 )
+	NewFigure('Torus');
+  c = [0.4 0.4 0.4];
+	shading flat
+  lighting gouraud
+  patch('vertices',v,'faces',f,'facecolor',c,'edgecolor',c,'ambient',1,'facealpha',0.2);
+  axis image
+  xlabel('x')
+  ylabel('y')
+  zlabel('z')
+  view([0 0 1])
+  grid on
+  rotate3d on
+  clear v
+end
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

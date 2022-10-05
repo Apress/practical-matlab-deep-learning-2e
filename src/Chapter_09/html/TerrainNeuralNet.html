@@ -1,0 +1,280 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Script implementing the terrain neural net</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="TerrainNeuralNet.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Script implementing the terrain neural net</h1><!--introduction--><p>You must have created the images in TerrainImages with CreateTerrainImages before running this script.</p><p>See also categorical, splitEachLabel, convolution2dLayer, batchNormalizationLayer, reluLayer, maxPooling2dLayer, fullyConnectedLayer, softmaxLayer, classificationLayer, trainNetwork, classify</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Get the images</a></li><li><a href="#2">Training</a></li><li><a href="#3">Test the neural net</a></li><li><a href="#4">Copyright</a></li></ul></div><h2 id="1">Get the images</h2><pre class="codeinput">cd <span class="string">TerrainImages</span>
+label = load(<span class="string">'Label'</span>);
+cd <span class="string">..</span>
+
+t          = categorical(label.t);
+nClasses   = max(label.t);
+imds       = imageDatastore(<span class="string">'TerrainImages'</span>,<span class="string">'labels'</span>,t);
+labelCount = countEachLabel(imds);
+
+<span class="comment">% Display a few snapshots</span>
+NewFigure(<span class="string">'Terrain Snapshots'</span>);
+n = 4;
+m = 5;
+ks = sort(randi(length(label.t),1,n*m)); <span class="comment">% random selection</span>
+<span class="keyword">for</span> i = 1:n*m
+	subplot(n,m,i);
+	imshow(imds.Files{ks(i)});
+  title(sprintf(<span class="string">'Image %d: %d'</span>,ks(i),label.t(ks(i))))
+<span class="keyword">end</span>
+
+<span class="comment">% We need the size of the images for the input layer</span>
+img = readimage(imds,1);
+
+<span class="comment">% Split into training and testing sets</span>
+fracTraining = 0.8;
+[imdsTrain,imdsTest] = splitEachLabel(imds,fracTraining,<span class="string">'randomized'</span>);
+</pre><img vspace="5" hspace="5" src="TerrainNeuralNet_01.png" alt=""> <h2 id="2">Training</h2><p>This gives the structure of the convolutional neural net</p><pre class="codeinput">layers = [
+    imageInputLayer(size(img))
+
+    convolution2dLayer(3,8,<span class="string">'Padding'</span>,<span class="string">'same'</span>)
+    batchNormalizationLayer
+    reluLayer
+
+    maxPooling2dLayer(2,<span class="string">'Stride'</span>,2)   <span class="comment">% Pool size and stride size</span>
+
+    convolution2dLayer(3,32,<span class="string">'Padding'</span>,<span class="string">'same'</span>)
+    batchNormalizationLayer
+    reluLayer
+
+    maxPooling2dLayer(2,<span class="string">'Stride'</span>,2)
+
+    fullyConnectedLayer(nClasses)
+    softmaxLayer
+    classificationLayer
+        ];
+disp(layers)
+
+options = trainingOptions(<span class="string">'sgdm'</span>, <span class="keyword">...</span>
+    <span class="string">'InitialLearnRate'</span>,0.01, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,6, <span class="keyword">...</span>
+    <span class="string">'MiniBatchSize'</span>,100,<span class="keyword">...</span>
+    <span class="string">'ValidationData'</span>,imdsTest, <span class="keyword">...</span>
+    <span class="string">'ValidationFrequency'</span>,10, <span class="keyword">...</span>
+    <span class="string">'ValidationPatience'</span>,inf,<span class="keyword">...</span>
+    <span class="string">'Shuffle'</span>,<span class="string">'every-epoch'</span>, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,false, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+disp(options)
+fprintf(<span class="string">'Fraction for training %8.2f%%\n'</span>,fracTraining*100);
+
+
+terrainNet = trainNetwork(imdsTrain,layers,options);
+</pre><pre class="codeoutput">  12&times;1 Layer array with layers:
+
+     1   ''   Image Input             16&times;16&times;3 images with 'zerocenter' normalization
+     2   ''   Convolution             8 3&times;3 convolutions with stride [1  1] and padding 'same'
+     3   ''   Batch Normalization     Batch normalization
+     4   ''   ReLU                    ReLU
+     5   ''   Max Pooling             2&times;2 max pooling with stride [2  2] and padding [0  0  0  0]
+     6   ''   Convolution             32 3&times;3 convolutions with stride [1  1] and padding 'same'
+     7   ''   Batch Normalization     Batch normalization
+     8   ''   ReLU                    ReLU
+     9   ''   Max Pooling             2&times;2 max pooling with stride [2  2] and padding [0  0  0  0]
+    10   ''   Fully Connected         2401 fully connected layer
+    11   ''   Softmax                 softmax
+    12   ''   Classification Output   crossentropyex
+  TrainingOptionsSGDM with properties:
+
+                        Momentum: 0.9
+                InitialLearnRate: 0.01
+               LearnRateSchedule: 'none'
+             LearnRateDropFactor: 0.1
+             LearnRateDropPeriod: 10
+                L2Regularization: 0.0001
+         GradientThresholdMethod: 'l2norm'
+               GradientThreshold: Inf
+                       MaxEpochs: 6
+                   MiniBatchSize: 100
+                         Verbose: 0
+                VerboseFrequency: 50
+                  ValidationData: [1&times;1 matlab.io.datastore.ImageDatastore]
+             ValidationFrequency: 10
+              ValidationPatience: Inf
+                         Shuffle: 'every-epoch'
+                  CheckpointPath: ''
+             CheckpointFrequency: 1
+         CheckpointFrequencyUnit: 'epoch'
+            ExecutionEnvironment: 'auto'
+                      WorkerLoad: []
+                       OutputFcn: []
+                           Plots: 'training-progress'
+                  SequenceLength: 'longest'
+            SequencePaddingValue: 0
+        SequencePaddingDirection: 'right'
+            DispatchInBackground: 0
+         ResetInputNormalization: 1
+    BatchNormalizationStatistics: 'population'
+                   OutputNetwork: 'last-iteration'
+
+Fraction for training    80.00%
+</pre><img vspace="5" hspace="5" src="TerrainNeuralNet_02.png" alt=""> <h2 id="3">Test the neural net</h2><pre class="codeinput">predLabels  = classify(terrainNet,imdsTest);
+testLabels  = imdsTest.Labels;
+
+accuracy = sum(predLabels == testLabels)/numel(testLabels);
+fprintf(<span class="string">'Accuracy is %8.2f%%\n'</span>,accuracy*100)
+
+save(<span class="string">'TerrainNet'</span>,<span class="string">'terrainNet'</span>)
+</pre><pre class="codeoutput">Accuracy is   100.00%
+</pre><h2 id="4">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script implementing the terrain neural net
+% You must have created the images in TerrainImages with CreateTerrainImages
+% before running this script.
+%
+% See also categorical, splitEachLabel, convolution2dLayer,
+% batchNormalizationLayer, reluLayer, maxPooling2dLayer,
+% fullyConnectedLayer, softmaxLayer, classificationLayer, trainNetwork,
+% classify
+
+%% Get the images
+cd TerrainImages
+label = load('Label');
+cd ..
+
+t          = categorical(label.t);
+nClasses   = max(label.t);
+imds       = imageDatastore('TerrainImages','labels',t);
+labelCount = countEachLabel(imds);
+
+% Display a few snapshots
+NewFigure('Terrain Snapshots');
+n = 4;
+m = 5;
+ks = sort(randi(length(label.t),1,n*m)); % random selection
+for i = 1:n*m
+	subplot(n,m,i);
+	imshow(imds.Files{ks(i)});
+  title(sprintf('Image %d: %d',ks(i),label.t(ks(i))))
+end
+
+% We need the size of the images for the input layer
+img = readimage(imds,1);
+
+% Split into training and testing sets
+fracTraining = 0.8;
+[imdsTrain,imdsTest] = splitEachLabel(imds,fracTraining,'randomized');
+
+%% Training
+% This gives the structure of the convolutional neural net
+layers = [
+    imageInputLayer(size(img))  
+    
+    convolution2dLayer(3,8,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    maxPooling2dLayer(2,'Stride',2)   % Pool size and stride size
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    maxPooling2dLayer(2,'Stride',2)   
+    
+    fullyConnectedLayer(nClasses)
+    softmaxLayer
+    classificationLayer
+        ];
+disp(layers)
+     
+options = trainingOptions('sgdm', ...
+    'InitialLearnRate',0.01, ...
+    'MaxEpochs',6, ...
+    'MiniBatchSize',100,...
+    'ValidationData',imdsTest, ...
+    'ValidationFrequency',10, ...
+    'ValidationPatience',inf,...
+    'Shuffle','every-epoch', ...
+    'Verbose',false, ...
+    'Plots','training-progress');
+disp(options)
+fprintf('Fraction for training %8.2f%%\n',fracTraining*100);
+
+  
+terrainNet = trainNetwork(imdsTrain,layers,options);
+ 
+ %% Test the neural net
+predLabels  = classify(terrainNet,imdsTest);
+testLabels  = imdsTest.Labels;
+
+accuracy = sum(predLabels == testLabels)/numel(testLabels);
+fprintf('Accuracy is %8.2f%%\n',accuracy*100)
+
+save('TerrainNet','terrainNet')
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+##### SOURCE END #####
+--></body></html>

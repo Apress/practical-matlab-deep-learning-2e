@@ -1,0 +1,377 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>music_generation</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-03"><meta name="DC.source" content="music_generation.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% music generative test</span>
+
+
+<span class="comment">% mat data: (input, input) (predicting input in vae). need to standardize</span>
+<span class="comment">% input size bc not fully convolutional with projection layers</span>
+<span class="comment">% z-scoring: it's a binary matrix, nothing to z-score really.</span>
+
+
+
+<span class="comment">% load data</span>
+mats = load(<span class="string">'matrix_data40.mat'</span>).x;
+<span class="comment">% x,y data</span>
+<span class="comment">% format into SSCB: spatial, spatial, channel, batch.</span>
+<span class="comment">% here: (89, 200, 1, length(mats))</span>
+train_s = 0.8;
+samps = cell2mat(mats);
+samps = reshape(samps, 89, 200, 1, length(mats));
+XTrain = samps(:,:,:,1:floor(train_s*length(mats)));
+XTest = dlarray(samps(:,:,:,floor(train_s*length(mats))+1:length(mats)), <span class="string">'SSCB'</span>);
+latentDim = 40;
+disp(size(XTrain));
+disp(size(XTest));
+imageSize = [89 200 1]; <span class="comment">% given by training data</span>
+numTrainExs = size(XTrain, 4);
+<span class="comment">% network</span>
+encoderLG = layerGraph([
+    imageInputLayer(imageSize,<span class="string">'Name'</span>,<span class="string">'input_encoder'</span>,<span class="string">'Normalization'</span>,<span class="string">'none'</span>)
+    convolution2dLayer(3, 32, <span class="string">'Padding'</span>,<span class="string">'same'</span>, <span class="string">'Stride'</span>, 2, <span class="string">'Name'</span>, <span class="string">'conv1'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu1'</span>)
+    convolution2dLayer(3, 64, <span class="string">'Padding'</span>,<span class="string">'same'</span>, <span class="string">'Stride'</span>, 2, <span class="string">'Name'</span>, <span class="string">'conv2'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu2'</span>)
+    convolution2dLayer(3, 128, <span class="string">'Padding'</span>,<span class="string">'same'</span>, <span class="string">'Stride'</span>, 2, <span class="string">'Name'</span>, <span class="string">'conv3'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu3'</span>)
+    fullyConnectedLayer(2 * latentDim, <span class="string">'Name'</span>, <span class="string">'fc_encoder'</span>)
+    ]);
+
+decoderLG = layerGraph([
+    imageInputLayer([1 1 latentDim],<span class="string">'Name'</span>,<span class="string">'i'</span>,<span class="string">'Normalization'</span>,<span class="string">'none'</span>)
+    transposedConv2dLayer(7, 128, <span class="string">'Cropping'</span>, 0, <span class="string">'Stride'</span>, 5, <span class="string">'Name'</span>, <span class="string">'transpose1'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu1'</span>)
+    transposedConv2dLayer(3, 64, <span class="string">'Cropping'</span>, 0, <span class="string">'Stride'</span>, 5, <span class="string">'Name'</span>, <span class="string">'transpose2'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu2'</span>)
+    transposedConv2dLayer(3, 32, <span class="string">'Cropping'</span>, 0, <span class="string">'Stride'</span>, [3, 7], <span class="string">'Name'</span>, <span class="string">'transpose3'</span>)
+    reluLayer(<span class="string">'Name'</span>,<span class="string">'relu3'</span>)
+    transposedConv2dLayer(3, 1, <span class="string">'Cropping'</span>, [6, 6, 14, 15], <span class="string">'Name'</span>, <span class="string">'transpose4'</span>)
+    ]);
+<span class="comment">% allows you to visualize network</span>
+<span class="comment">%analyzeNetwork(decoderLG);</span>
+<span class="comment">% convert to dlnetwork objects for automatic differentiation and custom</span>
+<span class="comment">% training loops</span>
+encoderNet = dlnetwork(encoderLG);
+decoderNet = dlnetwork(decoderLG);
+
+<span class="comment">% training set up</span>
+executionEnvironment = <span class="string">"auto"</span>;
+numEpochs = 50;
+miniBatchSize = 10;
+lr = 1e-3;
+
+numIterations = floor(numTrainExs/miniBatchSize);
+iteration = 0;
+
+avgGradientsEncoder = [];
+avgGradientsSquaredEncoder = [];
+avgGradientsDecoder = [];
+avgGradientsSquaredDecoder = [];
+
+<span class="comment">% train model:</span>
+<span class="keyword">for</span> epoch = 1:numEpochs
+    tic;
+    <span class="keyword">for</span> i = 1:numIterations
+        iteration = iteration + 1;
+        idx = (i-1)*miniBatchSize+1:i*miniBatchSize;
+        <span class="comment">%disp(idx);</span>
+        XBatch = XTrain(:,:,:,idx);
+        XBatch = dlarray(single(XBatch), <span class="string">'SSCB'</span>);
+
+        <span class="keyword">if</span> (executionEnvironment == <span class="string">"auto"</span> &amp;&amp; canUseGPU) || executionEnvironment == <span class="string">"gpu"</span>
+            XBatch = gpuArray(XBatch);
+        <span class="keyword">end</span>
+
+        [infGrad, genGrad] = dlfeval(<span class="keyword">...</span>
+            @modelGradients, encoderNet, decoderNet, XBatch);
+
+        [decoderNet.Learnables, avgGradientsDecoder, avgGradientsSquaredDecoder] = <span class="keyword">...</span>
+            adamupdate(decoderNet.Learnables, <span class="keyword">...</span>
+                genGrad, avgGradientsDecoder, avgGradientsSquaredDecoder, iteration, lr);
+        [encoderNet.Learnables, avgGradientsEncoder, avgGradientsSquaredEncoder] = <span class="keyword">...</span>
+            adamupdate(encoderNet.Learnables, <span class="keyword">...</span>
+                infGrad, avgGradientsEncoder, avgGradientsSquaredEncoder, iteration, lr);
+    <span class="keyword">end</span>
+    elapsedTime = toc;
+    baseline1 = zeros(size(XTest));
+    baseline2 = ones(size(XTest));
+    baseline3 = ones(size(XTest))*0.5;
+    baseline4 = rand(size(XTest));
+    base_t1 = just_reconstruction(baseline1, XTest);
+    base_t2 = just_reconstruction(baseline2, XTest);
+    base_t3 = just_reconstruction(baseline3, XTest);
+    base_t4 = just_reconstruction(baseline4, XTest);
+    disp([base_t1, base_t2, base_t3, base_t4])
+    [z, zMean, zLogvar] = sampling(encoderNet, XTest);
+    xPred = sigmoid(forward(decoderNet, z));
+    [elbo, recon] = ELBOloss(XTest, xPred, zMean, zLogvar);
+    <span class="comment">%disp(recon)</span>
+    disp(<span class="string">"Epoch : "</span>+epoch+<span class="string">" Test ELBO loss = "</span>+gather(extractdata(elbo))+<span class="keyword">...</span>
+        <span class="string">". Time taken for epoch = "</span>+ elapsedTime + <span class="string">"s"</span>)
+<span class="keyword">end</span>
+
+<span class="comment">% helper functions</span>
+<span class="keyword">function</span> [elbo, recon] = ELBOloss(x, xPred, zMean, zLogvar)
+squares = 0.5*(xPred-x).^2;
+reconstructionLoss  = sum(squares, [1,2,3]);
+KL = -.5 * sum(1 + zLogvar - zMean.^2 - exp(zLogvar), 1);
+
+elbo = mean(reconstructionLoss + KL);
+recon = mean(reconstructionLoss);
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> recon_l = just_reconstruction(x, xPred)
+squares = 0.5*(xPred-x).^2;
+reconstructionLoss  = sum(squares, [1,2,3]);
+recon_l = mean(reconstructionLoss);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [infGrad, genGrad] = modelGradients(encoderNet, decoderNet, x)
+[z, zMean, zLogvar] = sampling(encoderNet, x);
+<span class="comment">%disp(size(zMean))</span>
+xPred = sigmoid(forward(decoderNet, z));
+<span class="comment">%disp(size(xPred))</span>
+<span class="comment">%disp(size(x))</span>
+[loss, recon] = ELBOloss(x, xPred, zMean, zLogvar);
+[genGrad, infGrad] = dlgradient(loss, decoderNet.Learnables, <span class="keyword">...</span>
+    encoderNet.Learnables);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [zSampled, zMean, zLogvar] = sampling(encoderNet, x)
+compressed = forward(encoderNet, x);
+d = size(compressed,1)/2;
+zMean = compressed(1:d,:);
+zLogvar = compressed(1+d:end,:);
+
+sz = size(zMean);
+epsilon = randn(sz);
+sigma = exp(.5 * zLogvar);
+z = epsilon .* sigma + zMean;
+z = reshape(z, [1,1,sz]);
+zSampled = dlarray(z, <span class="string">'SSCB'</span>);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Undefined function 'dlarray' for input arguments of type 'double'.
+
+Error in music_generation (line 19)
+XTest = dlarray(samps(:,:,:,floor(train_s*length(mats))+1:length(mats)), 'SSCB');
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% music generative test
+
+
+% mat data: (input, input) (predicting input in vae). need to standardize
+% input size bc not fully convolutional with projection layers
+% z-scoring: it's a binary matrix, nothing to z-score really. 
+
+
+
+% load data
+mats = load('matrix_data40.mat').x;
+% x,y data
+% format into SSCB: spatial, spatial, channel, batch.
+% here: (89, 200, 1, length(mats))
+train_s = 0.8;
+samps = cell2mat(mats);
+samps = reshape(samps, 89, 200, 1, length(mats));
+XTrain = samps(:,:,:,1:floor(train_s*length(mats)));
+XTest = dlarray(samps(:,:,:,floor(train_s*length(mats))+1:length(mats)), 'SSCB');
+latentDim = 40;
+disp(size(XTrain));
+disp(size(XTest));
+imageSize = [89 200 1]; % given by training data
+numTrainExs = size(XTrain, 4);
+% network
+encoderLG = layerGraph([
+    imageInputLayer(imageSize,'Name','input_encoder','Normalization','none')
+    convolution2dLayer(3, 32, 'Padding','same', 'Stride', 2, 'Name', 'conv1')
+    reluLayer('Name','relu1')
+    convolution2dLayer(3, 64, 'Padding','same', 'Stride', 2, 'Name', 'conv2')
+    reluLayer('Name','relu2')
+    convolution2dLayer(3, 128, 'Padding','same', 'Stride', 2, 'Name', 'conv3')
+    reluLayer('Name','relu3')
+    fullyConnectedLayer(2 * latentDim, 'Name', 'fc_encoder')
+    ]);
+
+decoderLG = layerGraph([
+    imageInputLayer([1 1 latentDim],'Name','i','Normalization','none')
+    transposedConv2dLayer(7, 128, 'Cropping', 0, 'Stride', 5, 'Name', 'transpose1')
+    reluLayer('Name','relu1')
+    transposedConv2dLayer(3, 64, 'Cropping', 0, 'Stride', 5, 'Name', 'transpose2')
+    reluLayer('Name','relu2')
+    transposedConv2dLayer(3, 32, 'Cropping', 0, 'Stride', [3, 7], 'Name', 'transpose3')
+    reluLayer('Name','relu3')
+    transposedConv2dLayer(3, 1, 'Cropping', [6, 6, 14, 15], 'Name', 'transpose4')
+    ]);
+% allows you to visualize network
+%analyzeNetwork(decoderLG);
+% convert to dlnetwork objects for automatic differentiation and custom
+% training loops
+encoderNet = dlnetwork(encoderLG);
+decoderNet = dlnetwork(decoderLG);
+
+% training set up
+executionEnvironment = "auto";
+numEpochs = 50;
+miniBatchSize = 10;
+lr = 1e-3;
+
+numIterations = floor(numTrainExs/miniBatchSize);
+iteration = 0;
+
+avgGradientsEncoder = [];
+avgGradientsSquaredEncoder = [];
+avgGradientsDecoder = [];
+avgGradientsSquaredDecoder = [];
+
+% train model:
+for epoch = 1:numEpochs
+    tic;
+    for i = 1:numIterations
+        iteration = iteration + 1;
+        idx = (i-1)*miniBatchSize+1:i*miniBatchSize;
+        %disp(idx);
+        XBatch = XTrain(:,:,:,idx);
+        XBatch = dlarray(single(XBatch), 'SSCB');
+        
+        if (executionEnvironment == "auto" && canUseGPU) || executionEnvironment == "gpu"
+            XBatch = gpuArray(XBatch);           
+        end 
+            
+        [infGrad, genGrad] = dlfeval(...
+            @modelGradients, encoderNet, decoderNet, XBatch);
+        
+        [decoderNet.Learnables, avgGradientsDecoder, avgGradientsSquaredDecoder] = ...
+            adamupdate(decoderNet.Learnables, ...
+                genGrad, avgGradientsDecoder, avgGradientsSquaredDecoder, iteration, lr);
+        [encoderNet.Learnables, avgGradientsEncoder, avgGradientsSquaredEncoder] = ...
+            adamupdate(encoderNet.Learnables, ...
+                infGrad, avgGradientsEncoder, avgGradientsSquaredEncoder, iteration, lr);
+    end
+    elapsedTime = toc;
+    baseline1 = zeros(size(XTest));
+    baseline2 = ones(size(XTest));
+    baseline3 = ones(size(XTest))*0.5;
+    baseline4 = rand(size(XTest));
+    base_t1 = just_reconstruction(baseline1, XTest);
+    base_t2 = just_reconstruction(baseline2, XTest);
+    base_t3 = just_reconstruction(baseline3, XTest);
+    base_t4 = just_reconstruction(baseline4, XTest);
+    disp([base_t1, base_t2, base_t3, base_t4])
+    [z, zMean, zLogvar] = sampling(encoderNet, XTest);
+    xPred = sigmoid(forward(decoderNet, z));
+    [elbo, recon] = ELBOloss(XTest, xPred, zMean, zLogvar);
+    %disp(recon)
+    disp("Epoch : "+epoch+" Test ELBO loss = "+gather(extractdata(elbo))+...
+        ". Time taken for epoch = "+ elapsedTime + "s")    
+end
+
+% helper functions
+function [elbo, recon] = ELBOloss(x, xPred, zMean, zLogvar)
+squares = 0.5*(xPred-x).^2;
+reconstructionLoss  = sum(squares, [1,2,3]);
+KL = -.5 * sum(1 + zLogvar - zMean.^2 - exp(zLogvar), 1);
+
+elbo = mean(reconstructionLoss + KL);
+recon = mean(reconstructionLoss);
+
+end
+
+function recon_l = just_reconstruction(x, xPred)
+squares = 0.5*(xPred-x).^2;
+reconstructionLoss  = sum(squares, [1,2,3]);
+recon_l = mean(reconstructionLoss);
+end
+
+function [infGrad, genGrad] = modelGradients(encoderNet, decoderNet, x)
+[z, zMean, zLogvar] = sampling(encoderNet, x);
+%disp(size(zMean))
+xPred = sigmoid(forward(decoderNet, z));
+%disp(size(xPred))
+%disp(size(x))
+[loss, recon] = ELBOloss(x, xPred, zMean, zLogvar);
+[genGrad, infGrad] = dlgradient(loss, decoderNet.Learnables, ...
+    encoderNet.Learnables);
+end
+
+function [zSampled, zMean, zLogvar] = sampling(encoderNet, x)
+compressed = forward(encoderNet, x);
+d = size(compressed,1)/2;
+zMean = compressed(1:d,:);
+zLogvar = compressed(1+d:end,:);
+
+sz = size(zMean);
+epsilon = randn(sz);
+sigma = exp(.5 * zLogvar);
+z = epsilon .* sigma + zMean;
+z = reshape(z, [1,1,sz]);
+zSampled = dlarray(z, 'SSCB');
+end
+##### SOURCE END #####
+--></body></html>

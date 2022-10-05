@@ -1,0 +1,142 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Simulate level flight above Titan</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="Landing.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Simulate level flight above Titan</h1><!--introduction--><p>See also RHS2DTitan, Simulation2DTitan, TimeLabel, PlotSet</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Constants</a></li><li><a href="#2">Get the default data structure</a></li><li><a href="#3">Compute the flight conditions and the controls</a></li><li><a href="#4">Run the simulation</a></li><li><a href="#5">Copyright</a></li></ul></div><h2 id="1">Constants</h2><pre class="codeinput">rTitan      = 2575;
+mu          = 9.142117352579678e+03;
+kMToM       = 1000;
+</pre><h2 id="2">Get the default data structure</h2><pre class="codeinput">d           = RHS2DTitan;
+</pre><h2 id="3">Compute the flight conditions and the controls</h2><pre class="codeinput">d.mass      = 2000; <span class="comment">% kg</span>
+d.s         = 20; <span class="comment">% m^2</span>
+altitude    = 100; <span class="comment">% km</span>
+r           = rTitan + altitude;
+d.thrust    = 0;
+d.alpha     = 0.0;
+tEnd        = 20*60;
+</pre><h2 id="4">Run the simulation</h2><pre class="codeinput">n           = 2000;
+t           = linspace(0,tEnd,n);
+x           = [r;0;sqrt(mu/r)];
+u           = [d.alpha*ones(1,n);d.thrust*ones(1,n)];
+[~,xP,t]    = Simulation2DTitan( x, t, d, u );
+[t,tL]      = TimeLabel(t);
+d.states{1} = <span class="string">'Altitude (km)'</span>;
+xP(1,:)     = xP(1,:) - rTitan;
+PlotSet(t,xP,<span class="string">'x label'</span>,tL,<span class="string">'y label'</span>,d.states,<span class="string">'figure title'</span>,<span class="string">'Reentry'</span>)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (2: Reentry) with properties:
+
+      Number: 2
+        Name: 'Reentry'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="Landing_01.png" alt=""> <h2 id="5">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Simulate level flight above Titan
+% See also RHS2DTitan, Simulation2DTitan, TimeLabel, PlotSet
+
+%% Constants
+rTitan      = 2575;
+mu          = 9.142117352579678e+03;
+kMToM       = 1000;
+
+%% Get the default data structure
+d           = RHS2DTitan;
+
+%% Compute the flight conditions and the controls
+d.mass      = 2000; % kg
+d.s         = 20; % m^2
+altitude    = 100; % km
+r           = rTitan + altitude;
+d.thrust    = 0;
+d.alpha     = 0.0;
+tEnd        = 20*60;
+
+%% Run the simulation
+n           = 2000;
+t           = linspace(0,tEnd,n);
+x           = [r;0;sqrt(mu/r)];
+u           = [d.alpha*ones(1,n);d.thrust*ones(1,n)];
+[~,xP,t]    = Simulation2DTitan( x, t, d, u );
+[t,tL]      = TimeLabel(t);
+d.states{1} = 'Altitude (km)';
+xP(1,:)     = xP(1,:) - rTitan;
+PlotSet(t,xP,'x label',tL,'y label',d.states,'figure title','Reentry')
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

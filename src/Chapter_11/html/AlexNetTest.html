@@ -1,0 +1,313 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Demo of classifying images with pre-trained networks</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="AlexNetTest.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Demo of classifying images with pre-trained networks</h1><!--introduction--><p>alexnet is a pretrained convolutional neural network that is available as an Add-On to the Deep Learning toolbox. It has 1000 object categories. You must install alexnet from the Add-Ons for this demo.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also</a></li><li><a href="#2">Load the network</a></li><li><a href="#3">Load a test image and classify it</a></li><li><a href="#4">Try the cat</a></li><li><a href="#5">Next test a picture of a box - this one is hard</a></li><li><a href="#6">A summary</a></li><li><a href="#7">Copyright</a></li></ul></div><h2 id="1">See also</h2><p>alexnet, classify, imshow</p><h2 id="2">Load the network</h2><p>Access the trained model. This is a SeriesNetwork.</p><pre class="codeinput">net = alexnet;
+net
+
+<span class="comment">% See details of the architecture</span>
+net.Layers
+</pre><pre class="codeoutput">
+net = 
+
+  SeriesNetwork with properties:
+
+         Layers: [25&times;1 nnet.cnn.layer.Layer]
+     InputNames: {'data'}
+    OutputNames: {'output'}
+
+
+ans = 
+
+  25&times;1 Layer array with layers:
+
+     1   'data'     Image Input                   227&times;227&times;3 images with 'zerocenter' normalization
+     2   'conv1'    Convolution                   96 11&times;11&times;3 convolutions with stride [4  4] and padding [0  0  0  0]
+     3   'relu1'    ReLU                          ReLU
+     4   'norm1'    Cross Channel Normalization   cross channel normalization with 5 channels per element
+     5   'pool1'    Max Pooling                   3&times;3 max pooling with stride [2  2] and padding [0  0  0  0]
+     6   'conv2'    Grouped Convolution           2 groups of 128 5&times;5&times;48 convolutions with stride [1  1] and padding [2  2  2  2]
+     7   'relu2'    ReLU                          ReLU
+     8   'norm2'    Cross Channel Normalization   cross channel normalization with 5 channels per element
+     9   'pool2'    Max Pooling                   3&times;3 max pooling with stride [2  2] and padding [0  0  0  0]
+    10   'conv3'    Convolution                   384 3&times;3&times;256 convolutions with stride [1  1] and padding [1  1  1  1]
+    11   'relu3'    ReLU                          ReLU
+    12   'conv4'    Grouped Convolution           2 groups of 192 3&times;3&times;192 convolutions with stride [1  1] and padding [1  1  1  1]
+    13   'relu4'    ReLU                          ReLU
+    14   'conv5'    Grouped Convolution           2 groups of 128 3&times;3&times;192 convolutions with stride [1  1] and padding [1  1  1  1]
+    15   'relu5'    ReLU                          ReLU
+    16   'pool5'    Max Pooling                   3&times;3 max pooling with stride [2  2] and padding [0  0  0  0]
+    17   'fc6'      Fully Connected               4096 fully connected layer
+    18   'relu6'    ReLU                          ReLU
+    19   'drop6'    Dropout                       50% dropout
+    20   'fc7'      Fully Connected               4096 fully connected layer
+    21   'relu7'    ReLU                          ReLU
+    22   'drop7'    Dropout                       50% dropout
+    23   'fc8'      Fully Connected               1000 fully connected layer
+    24   'prob'     Softmax                       softmax
+    25   'output'   Classification Output         crossentropyex with 'tench' and 999 other classes
+</pre><h2 id="3">Load a test image and classify it</h2><p>Read the image to classify</p><pre class="codeinput">I = imread(<span class="string">'peppers.png'</span>);  <span class="comment">% ships with MATLAB</span>
+
+<span class="comment">% Adjust size of the image to the net's input layer</span>
+sz = net.Layers(1).InputSize;
+I = I(1:sz(1),1:sz(2),1:sz(3));
+
+<span class="comment">% Classify the image using AlexNet</span>
+[label, scorePeppers] = classify(net, I);
+
+<span class="comment">%  Show the image and the classification results</span>
+NewFigure(<span class="string">'Pepper'</span>); ax = gca;
+imshow(I);
+title(ax,label);
+
+PlotSet(1:length(scorePeppers),scorePeppers,<span class="string">'x label'</span>,<span class="string">'Category'</span>,<span class="keyword">...</span>
+        <span class="string">'y label'</span>,<span class="string">'Score'</span>,<span class="string">'plot title'</span>,<span class="string">'Peppers'</span>);
+
+<span class="comment">% What other categories are similar?</span>
+disp(<span class="string">'Categories with highest scores for Peppers:'</span>)
+kPos = find(scorePeppers&gt;0.01);
+[vals,kSort] = sort(scorePeppers(kPos),<span class="string">'descend'</span>);
+<span class="keyword">for</span> k = 1:length(kSort)
+  fprintf(<span class="string">'%13s:\t%g\n'</span>,net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Categories with highest scores for Peppers:
+  bell pepper:	0.700013
+ Granny Smith:	0.180637
+     cucumber:	0.0435252
+          fig:	0.0144056
+        lemon:	0.0100655
+</pre><img vspace="5" hspace="5" src="AlexNetTest_01.png" alt=""> <img vspace="5" hspace="5" src="AlexNetTest_02.png" alt=""> <h2 id="4">Try the cat</h2><p>Adjust size of the image</p><pre class="codeinput">I0 = imread(<span class="string">'Cat.png'</span>); <span class="comment">% included with this textbook</span>
+I  = imresize(I0,[227 227]);
+
+<span class="comment">% Classify the image</span>
+[label, scoreCat] = classify(net, I);
+
+<span class="comment">% Show the image and the classification results</span>
+NewFigure(<span class="string">'Tabby Cat'</span>); ax = gca;
+imshow(I)
+title(ax,label);
+PlotSet(1:length(scoreCat),scoreCat,<span class="string">'x label'</span>,<span class="string">'Category'</span>,<span class="string">'y label'</span>,<span class="string">'Score'</span>,<span class="keyword">...</span>
+       <span class="string">'plot title'</span>,<span class="string">'Tabby Cat'</span>);
+
+<span class="comment">% What other categories are similar?</span>
+disp(<span class="string">'Categories with highest scores for Cat:'</span>)
+kPos = find(scoreCat&gt;0.01);
+[vals,kSort] = sort(scoreCat(kPos),<span class="string">'descend'</span>);
+<span class="keyword">for</span> k = 1:length(kSort)
+  fprintf(<span class="string">'%20s:\t%g\n'</span>,net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Categories with highest scores for Cat:
+               tabby:	0.805645
+        Egyptian cat:	0.15372
+           tiger cat:	0.0338046
+</pre><img vspace="5" hspace="5" src="AlexNetTest_03.png" alt=""> <img vspace="5" hspace="5" src="AlexNetTest_04.png" alt=""> <h2 id="5">Next test a picture of a box - this one is hard</h2><p>This shiny metal box gets identified as a 'hard disc'</p><pre class="codeinput"><span class="comment">% Read and adjust size of the image</span>
+I0 = imread(<span class="string">'Box.jpg'</span>);      <span class="comment">% included with this textbook</span>
+I  = imresize(I0,[227 227]);
+
+<span class="comment">% Classify the image</span>
+[label, scoreBox] = classify(net, I);
+
+<span class="comment">% Show the image and the classification results</span>
+NewFigure(<span class="string">'Box'</span>); ax = gca;
+imshow(I);
+title(ax,label);
+
+PlotSet(1:length(scoreBox),scoreBox,<span class="string">'x label'</span>,<span class="string">'Category'</span>,<span class="string">'y label'</span>,<span class="string">'Score'</span>,<span class="keyword">...</span>
+        <span class="string">'plot title'</span>,<span class="string">'Box'</span>);
+
+<span class="comment">% What other categories are similar?</span>
+disp(<span class="string">'Categories with highest scores for Box:'</span>)
+kPos = find(scoreBox&gt;0.05);
+[vals,kSort] = sort(scoreBox(kPos),<span class="string">'descend'</span>);
+<span class="keyword">for</span> k = 1:length(kSort)
+  fprintf(<span class="string">'%13s:\t%g\n'</span>,net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Categories with highest scores for Box:
+    hard disc:	0.291532
+        loupe:	0.0731846
+        modem:	0.0702889
+         pick:	0.0610286
+         iPod:	0.0595868
+    CD player:	0.0508571
+</pre><img vspace="5" hspace="5" src="AlexNetTest_05.png" alt=""> <img vspace="5" hspace="5" src="AlexNetTest_06.png" alt=""> <h2 id="6">A summary</h2><pre class="codeinput">disp(<span class="string">'AlexNet results summary:'</span>)
+fprintf(<span class="string">'\nPepper  %12.4f\nCat     %12.4f\nBox     %12.4f\n\n'</span>,<span class="keyword">...</span>
+  max(scorePeppers),max(scoreCat),max(scoreBox));
+</pre><pre class="codeoutput">AlexNet results summary:
+
+Pepper        0.7000
+Cat           0.8056
+Box           0.2915
+
+</pre><h2 id="7">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Demo of classifying images with pre-trained networks
+% alexnet is a pretrained convolutional neural network that is available as an
+% Add-On to the Deep Learning toolbox. It has 1000 object categories. You must
+% install alexnet from the Add-Ons for this demo.
+%% See also
+% alexnet, classify, imshow
+
+%% Load the network
+% Access the trained model. This is a SeriesNetwork. 
+net = alexnet;
+net
+
+% See details of the architecture 
+net.Layers 
+
+%% Load a test image and classify it
+% Read the image to classify 
+I = imread('peppers.png');  % ships with MATLAB
+
+% Adjust size of the image to the net's input layer
+sz = net.Layers(1).InputSize;
+I = I(1:sz(1),1:sz(2),1:sz(3)); 
+
+% Classify the image using AlexNet 
+[label, scorePeppers] = classify(net, I);
+
+%  Show the image and the classification results 
+NewFigure('Pepper'); ax = gca;
+imshow(I); 
+title(ax,label);
+
+PlotSet(1:length(scorePeppers),scorePeppers,'x label','Category',...
+        'y label','Score','plot title','Peppers');
+      
+% What other categories are similar?
+disp('Categories with highest scores for Peppers:')
+kPos = find(scorePeppers>0.01);
+[vals,kSort] = sort(scorePeppers(kPos),'descend');
+for k = 1:length(kSort)
+  fprintf('%13s:\t%g\n',net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+end
+
+%% Try the cat
+% Adjust size of the image 
+I0 = imread('Cat.png'); % included with this textbook
+I  = imresize(I0,[227 227]);
+
+% Classify the image 
+[label, scoreCat] = classify(net, I);
+
+% Show the image and the classification results 
+NewFigure('Tabby Cat'); ax = gca;
+imshow(I) 
+title(ax,label);
+PlotSet(1:length(scoreCat),scoreCat,'x label','Category','y label','Score',...
+       'plot title','Tabby Cat');
+
+% What other categories are similar?
+disp('Categories with highest scores for Cat:')
+kPos = find(scoreCat>0.01);
+[vals,kSort] = sort(scoreCat(kPos),'descend');
+for k = 1:length(kSort)
+  fprintf('%20s:\t%g\n',net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+end
+
+%% Next test a picture of a box - this one is hard
+% This shiny metal box gets identified as a 'hard disc'
+
+% Read and adjust size of the image 
+I0 = imread('Box.jpg');      % included with this textbook
+I  = imresize(I0,[227 227]);
+
+% Classify the image 
+[label, scoreBox] = classify(net, I);
+
+% Show the image and the classification results 
+NewFigure('Box'); ax = gca;
+imshow(I); 
+title(ax,label);
+
+PlotSet(1:length(scoreBox),scoreBox,'x label','Category','y label','Score',...
+        'plot title','Box');
+
+% What other categories are similar?
+disp('Categories with highest scores for Box:')
+kPos = find(scoreBox>0.05);
+[vals,kSort] = sort(scoreBox(kPos),'descend');
+for k = 1:length(kSort)
+  fprintf('%13s:\t%g\n',net.Layers(end).Classes(kPos(kSort(k))),vals(k));
+end
+
+
+%% A summary
+disp('AlexNet results summary:')
+fprintf('\nPepper  %12.4f\nCat     %12.4f\nBox     %12.4f\n\n',...
+  max(scorePeppers),max(scoreCat),max(scoreBox));
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+
+
+##### SOURCE END #####
+--></body></html>

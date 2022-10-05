@@ -1,0 +1,271 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Train and test the sentence completion neural net</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="SentenceCompletionNN.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Train and test the sentence completion neural net</h1><!--introduction--><p>Loads the Sentences mat-file.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also</a></li><li><a href="#2">Load the data</a></li><li><a href="#3">Set up the network</a></li><li><a href="#4">Train the network</a></li><li><a href="#5">Copyright</a></li></ul></div><h2 id="1">See also</h2><p>PrepareSequences, sequenceInputLayer, bilstmLayer, fullyConnectedLayer, softmaxLayer, classificationLayer, classify</p><h2 id="2">Load the data</h2><pre class="codeinput">s = load(<span class="string">'Sentences'</span>);
+n = length(s.c);        <span class="comment">% number of sentences</span>
+
+<span class="comment">% Make sure the sequences are valid. One in every 5 is complete.</span>
+<span class="keyword">for</span> k = 1:10
+  fprintf(<span class="string">'Category: %d'</span>,s.c(k));
+  fprintf(<span class="string">'%5d'</span>,s.nZ{k})
+  fprintf(<span class="string">'\n'</span>)
+  <span class="keyword">if</span>( mod(k,5) == 0 )
+    fprintf(<span class="string">'\n'</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Category: 0  141 2551 2953 2296 5229 4508 4872 5228 5867  559  849  484 3709  490  329  660  490  559 1424  464 2783  173
+Category: 0  141 2551 2953 2296 5229 4508 4872 5228 5867  559  849  484 3709  490  329  660  490  559 2878  464 2783  173
+Category: 1  141 2551 2953 2296 5229 4508 4872 5228 5867  559  849  484 3709  490  329  660  490  559 4365  464 2783  173
+Category: 0  141 2551 2953 2296 5229 4508 4872 5228 5867  559  849  484 3709  490  329  660  490  559 3320  464 2783  173
+Category: 0  141 2551 2953 2296 5229 4508 4872 5228 5867  559  849  484 3709  490  329  660  490  559 5642  464 2783  173
+
+Category: 1  154 5663 2311 3797  587  329 4754  490 3797  587  329  736 5783 2198  575 1450 2783 1962 3582  490 1336
+Category: 0  154 5663 2311 3797  587  329 4754  490 3797  587  329  736 5783 2198  575 4052 2783 1962 3582  490 1336
+Category: 0  154 5663 2311 3797  587  329 4754  490 3797  587  329  736 5783 2198  575 2786 2783 1962 3582  490 1336
+Category: 0  154 5663 2311 3797  587  329 4754  490 3797  587  329  736 5783 2198  575 3408 2783 1962 3582  490 1336
+Category: 0  154 5663 2311 3797  587  329 4754  490 3797  587  329  736 5783 2198  575 1192 2783 1962 3582  490 1336
+
+</pre><h2 id="3">Set up the network</h2><pre class="codeinput">numFeatures = 1;
+numHiddenUnits = 200;
+
+numClasses = 2;
+
+<span class="comment">% Good results with validation frequency of 10 and 200 hidden units</span>
+layers = [ <span class="keyword">...</span>
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,<span class="string">'OutputMode'</span>,<span class="string">'sequence'</span>)
+    dropoutLayer(0.2)
+    bilstmLayer(numHiddenUnits,<span class="string">'OutputMode'</span>,<span class="string">'last'</span>)
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+</pre><pre class="codeoutput">  7&times;1 Layer array with layers:
+
+     1   ''   Sequence Input          Sequence input with 1 dimensions
+     2   ''   BiLSTM                  BiLSTM with 200 hidden units
+     3   ''   Dropout                 20% dropout
+     4   ''   BiLSTM                  BiLSTM with 200 hidden units
+     5   ''   Fully Connected         2 fully connected layer
+     6   ''   Softmax                 softmax
+     7   ''   Classification Output   crossentropyex
+</pre><h2 id="4">Train the network</h2><pre class="codeinput">kTrain      = randperm(n,0.85*n);
+xTrain      = s.nZ(kTrain);             <span class="comment">% sentence indices, in order</span>
+yTrain      = categorical(s.c(kTrain)); <span class="comment">% complete or not?</span>
+
+<span class="comment">% Test this network - results show overfitting</span>
+kTest       = setdiff(1:n,kTrain);
+xTest       = s.nZ(kTest);
+yTest       = categorical(s.c(kTest));
+
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,240, <span class="keyword">...</span>
+    <span class="string">'GradientThreshold'</span>,1, <span class="keyword">...</span>
+    <span class="string">'ValidationData'</span>,{xTest,yTest}, <span class="keyword">...</span>
+    <span class="string">'ValidationFrequency'</span>,10, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+
+disp(options)
+
+net         = trainNetwork(xTrain,yTrain,layers,options);
+yPred       = classify(net,xTest);
+
+<span class="comment">% Calculate the classification accuracy of the predictions.</span>
+acc         = sum(yPred == yTest)./numel(yTest);
+disp(<span class="string">'All'</span>)
+disp(acc);
+
+j       = find(yTest == <span class="string">'1'</span>);
+yPredC  = classify(net,xTest(j));
+accC    = sum(yPredC == yTest(j))./numel(yTest(j));
+disp(<span class="string">'Correct'</span>)
+disp(accC);
+</pre><pre class="codeoutput">  TrainingOptionsADAM with properties:
+
+             GradientDecayFactor: 0.9
+      SquaredGradientDecayFactor: 0.999
+                         Epsilon: 1e-08
+                InitialLearnRate: 0.001
+               LearnRateSchedule: 'none'
+             LearnRateDropFactor: 0.1
+             LearnRateDropPeriod: 10
+                L2Regularization: 0.0001
+         GradientThresholdMethod: 'l2norm'
+               GradientThreshold: 1
+                       MaxEpochs: 240
+                   MiniBatchSize: 128
+                         Verbose: 0
+                VerboseFrequency: 50
+                  ValidationData: {{780&times;1 cell}  [780&times;1 categorical]}
+             ValidationFrequency: 10
+              ValidationPatience: Inf
+                         Shuffle: 'once'
+                  CheckpointPath: ''
+             CheckpointFrequency: 1
+         CheckpointFrequencyUnit: 'epoch'
+            ExecutionEnvironment: 'auto'
+                      WorkerLoad: []
+                       OutputFcn: []
+                           Plots: 'training-progress'
+                  SequenceLength: 'longest'
+            SequencePaddingValue: 0
+        SequencePaddingDirection: 'right'
+            DispatchInBackground: 0
+         ResetInputNormalization: 1
+    BatchNormalizationStatistics: 'population'
+                   OutputNetwork: 'last-iteration'
+
+All
+      0.79359
+
+Correct
+     0
+
+</pre><img vspace="5" hspace="5" src="SentenceCompletionNN_01.png" alt=""> <h2 id="5">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Train and test the sentence completion neural net
+% Loads the Sentences mat-file.
+%% See also
+% PrepareSequences, sequenceInputLayer, bilstmLayer, fullyConnectedLayer,
+% softmaxLayer, classificationLayer, classify
+
+%% Load the data
+s = load('Sentences');
+n = length(s.c);        % number of sentences
+
+% Make sure the sequences are valid. One in every 5 is complete.
+for k = 1:10
+  fprintf('Category: %d',s.c(k));
+  fprintf('%5d',s.nZ{k})
+  fprintf('\n')
+  if( mod(k,5) == 0 )
+    fprintf('\n')
+  end
+end
+
+%% Set up the network
+numFeatures = 1;
+numHiddenUnits = 200;
+
+numClasses = 2;
+
+% Good results with validation frequency of 10 and 200 hidden units
+layers = [ ...
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,'OutputMode','sequence')
+    dropoutLayer(0.2)
+    bilstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+
+%% Train the network
+kTrain      = randperm(n,0.85*n);
+xTrain      = s.nZ(kTrain);             % sentence indices, in order
+yTrain      = categorical(s.c(kTrain)); % complete or not?
+
+% Test this network - results show overfitting
+kTest       = setdiff(1:n,kTrain);
+xTest       = s.nZ(kTest);
+yTest       = categorical(s.c(kTest));
+  
+options = trainingOptions('adam', ...
+    'MaxEpochs',240, ...
+    'GradientThreshold',1, ...
+    'ValidationData',{xTest,yTest}, ...
+    'ValidationFrequency',10, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+  
+disp(options)
+
+net         = trainNetwork(xTrain,yTrain,layers,options);
+yPred       = classify(net,xTest);
+
+% Calculate the classification accuracy of the predictions.
+acc         = sum(yPred == yTest)./numel(yTest);
+disp('All')
+disp(acc);
+
+j       = find(yTest == '1');
+yPredC  = classify(net,xTest(j));
+accC    = sum(yPredC == yTest(j))./numel(yTest(j));
+disp('Correct')
+disp(accC);
+
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

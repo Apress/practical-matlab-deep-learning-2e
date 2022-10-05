@@ -1,0 +1,249 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Implement and test the neural net to classify circles from ellipses</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="EllipsesNeuralNet.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Implement and test the neural net to classify circles from ellipses</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also:</a></li><li><a href="#2">Get the images</a></li><li><a href="#3">Define the layers for the net</a></li><li><a href="#4">Training</a></li><li><a href="#5">Test the neural net</a></li><li><a href="#6">Copyright</a></li></ul></div><h2 id="1">See also:</h2><p>categorical, imageDatastore, countEachLabel, splitEachLabel, imageInputLayer, convolution2dLayer, batchNormalizationLayer, reluLayer, maxPooling2dLayer, softmaxLayer, classificationLayer, trainingOptions, trainNetwork, classify</p><h2 id="2">Get the images</h2><pre class="codeinput">thisDir = fileparts(mfilename(<span class="string">'fullpath'</span>));
+cd0 = cd;
+cd(thisDir)
+cd <span class="string">Ellipses</span>
+type = load(<span class="string">'Type'</span>);
+cd <span class="string">..</span>
+t    = categorical(type.t);
+imds = imageDatastore(<span class="string">'Ellipses'</span>,<span class="string">'labels'</span>,t);
+cd(cd0)
+
+labelCount = countEachLabel(imds);
+
+<span class="comment">% Display a few ellipses</span>
+NewFigure(<span class="string">'Ellipses'</span>)
+n = 4;
+m = 5;
+ks = sort(randi(length(type.t),1,n*m)); <span class="comment">% random selection</span>
+<span class="keyword">for</span> i = 1:n*m
+	subplot(n,m,i);
+	imshow(imds.Files{ks(i)});
+  title(sprintf(<span class="string">'Image %d: %d'</span>,ks(i),type.t(ks(i))))
+<span class="keyword">end</span>
+
+<span class="comment">% We need the size of the images for the input layer</span>
+img = readimage(imds,1);
+
+<span class="comment">% Split the data into training and testing sets</span>
+fracTrain             = 0.8;
+[imdsTrain,imdsTest]  = splitEachLabel(imds,fracTrain,<span class="string">'randomize'</span>);
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (6: Ellipses) with properties:
+
+      Number: 6
+        Name: 'Ellipses'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="EllipsesNeuralNet_01.png" alt=""> <h2 id="3">Define the layers for the net</h2><p>This gives the structure of the convolutional neural net</p><pre class="codeinput">layers = [
+    imageInputLayer(size(img))
+
+    convolution2dLayer(3,8,<span class="string">'Padding'</span>,<span class="string">'same'</span>)
+    batchNormalizationLayer
+    reluLayer
+
+    maxPooling2dLayer(2,<span class="string">'Stride'</span>,2)
+
+    convolution2dLayer(3,16,<span class="string">'Padding'</span>,<span class="string">'same'</span>)
+    batchNormalizationLayer
+    reluLayer
+
+    maxPooling2dLayer(2,<span class="string">'Stride'</span>,2)
+
+    convolution2dLayer(3,32,<span class="string">'Padding'</span>,<span class="string">'same'</span>)
+    batchNormalizationLayer
+    reluLayer
+
+    fullyConnectedLayer(2)
+    softmaxLayer
+    classificationLayer
+        ];
+</pre><h2 id="4">Training</h2><p>The mini-batch size should be less than the data set size; the mini-batch is used at each training iteration to evaluate gradients and update the weights.</p><pre class="codeinput">options = trainingOptions(<span class="string">'sgdm'</span>, <span class="keyword">...</span>
+    <span class="string">'InitialLearnRate'</span>,0.01, <span class="keyword">...</span>
+    <span class="string">'MiniBatchSize'</span>,16, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,5, <span class="keyword">...</span>
+    <span class="string">'Shuffle'</span>,<span class="string">'every-epoch'</span>, <span class="keyword">...</span>
+    <span class="string">'ValidationData'</span>,imdsTest, <span class="keyword">...</span>
+    <span class="string">'ValidationFrequency'</span>,2, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,false, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+
+
+net = trainNetwork(imdsTrain,layers,options);
+</pre><img vspace="5" hspace="5" src="EllipsesNeuralNet_02.png" alt=""> <h2 id="5">Test the neural net</h2><pre class="codeinput">predLabels  = classify(net,imdsTest);
+testLabels  = imdsTest.Labels;
+
+accuracy = sum(predLabels == testLabels)/numel(testLabels);
+fprintf(<span class="string">'Accuracy is %8.2f%%\n'</span>,accuracy*100)
+</pre><pre class="codeoutput">Accuracy is    97.50%
+</pre><h2 id="6">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Implement and test the neural net to classify circles from ellipses
+%% See also:
+% categorical, imageDatastore, countEachLabel, splitEachLabel, imageInputLayer,
+% convolution2dLayer, batchNormalizationLayer, reluLayer, maxPooling2dLayer,
+% softmaxLayer, classificationLayer, trainingOptions, trainNetwork, classify
+
+%% Get the images
+thisDir = fileparts(mfilename('fullpath'));
+cd0 = cd;
+cd(thisDir)
+cd Ellipses
+type = load('Type');
+cd ..
+t    = categorical(type.t);
+imds = imageDatastore('Ellipses','labels',t);
+cd(cd0)
+
+labelCount = countEachLabel(imds);
+
+% Display a few ellipses
+NewFigure('Ellipses')
+n = 4;
+m = 5;
+ks = sort(randi(length(type.t),1,n*m)); % random selection
+for i = 1:n*m
+	subplot(n,m,i);
+	imshow(imds.Files{ks(i)});
+  title(sprintf('Image %d: %d',ks(i),type.t(ks(i))))
+end
+
+% We need the size of the images for the input layer
+img = readimage(imds,1);
+
+% Split the data into training and testing sets
+fracTrain             = 0.8;
+[imdsTrain,imdsTest]  = splitEachLabel(imds,fracTrain,'randomize');
+
+%% Define the layers for the net
+% This gives the structure of the convolutional neural net
+layers = [
+    imageInputLayer(size(img))  
+    
+    convolution2dLayer(3,8,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    maxPooling2dLayer(2,'Stride',2)   
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer    
+    
+    maxPooling2dLayer(2,'Stride',2)   
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer  
+    
+    fullyConnectedLayer(2)
+    softmaxLayer
+    classificationLayer
+        ];
+      
+%% Training   
+% The mini-batch size should be less than the data set size; the mini-batch is
+% used at each training iteration to evaluate gradients and update the weights. 
+options = trainingOptions('sgdm', ...
+    'InitialLearnRate',0.01, ...
+    'MiniBatchSize',16, ...
+    'MaxEpochs',5, ...
+    'Shuffle','every-epoch', ...
+    'ValidationData',imdsTest, ...
+    'ValidationFrequency',2, ...
+    'Verbose',false, ...
+    'Plots','training-progress');
+
+  
+net = trainNetwork(imdsTrain,layers,options);
+ 
+ %% Test the neural net
+predLabels  = classify(net,imdsTest);
+testLabels  = imdsTest.Labels;
+
+accuracy = sum(predLabels == testLabels)/numel(testLabels);
+fprintf('Accuracy is %8.2f%%\n',accuracy*100)
+
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

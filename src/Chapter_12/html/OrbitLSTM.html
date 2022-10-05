@@ -1,0 +1,239 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Script to train and test the Orbit LSTM</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-05"><meta name="DC.source" content="OrbitLSTM.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Script to train and test the Orbit LSTM</h1><!--introduction--><p>It will estimate the orbit semi-major axis and eccentricity from a time sequence of angle measurements. Loads OrbitData.mat</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also</a></li><li><a href="#2">Set up the training and test sets</a></li><li><a href="#3">Train the network with validation</a></li><li><a href="#4">Test the network</a></li><li><a href="#5">Plot the results</a></li><li><a href="#6">Copyright</a></li></ul></div><h2 id="1">See also</h2><p>Orbits, sequenceInputLayer, bilstmLayer, dropoutLayer, fullyConnectedLayer, regressionLayer, trainingOptions, trainNetwork, predict</p><pre class="codeinput">s           = load(<span class="string">'OrbitData'</span>);
+n           = length(s.data);
+nTrain      = floor(0.9*n);
+</pre><h2 id="2">Set up the training and test sets</h2><pre class="codeinput">kTrain      = randperm(n,nTrain);
+aMean       = mean([s.el(:).a]);
+xTrain      = s.data(kTrain);
+nTest       = n-nTrain;
+
+elTrain     = s.el(kTrain);
+yTrain      = [elTrain.a;elTrain.e]';
+yTrain(:,1) = yTrain(:,1)/aMean;
+kTest       = setdiff(1:n,kTrain);
+xTest       = s.data(kTest);
+
+elTest      = s.el(kTest);
+yTest       = [elTest.a;elTest.e]';
+yTest(:,1)  = yTest(:,1)/aMean;
+</pre><h2 id="3">Train the network with validation</h2><pre class="codeinput">numFeatures     = 1;
+numHiddenUnits1 = 100;
+numHiddenUnits2 = 100;
+numClasses      = 2;
+
+layers = [ <span class="keyword">...</span>
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits1,<span class="string">'OutputMode'</span>,<span class="string">'sequence'</span>)
+    dropoutLayer(0.2)
+    bilstmLayer(numHiddenUnits2,<span class="string">'OutputMode'</span>,<span class="string">'last'</span>)
+    fullyConnectedLayer(numClasses)
+    regressionLayer]
+
+maxEpochs = 20;
+
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+    <span class="string">'ExecutionEnvironment'</span>,<span class="string">'cpu'</span>, <span class="keyword">...</span>
+    <span class="string">'GradientThreshold'</span>,1, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,maxEpochs, <span class="keyword">...</span>
+    <span class="string">'Shuffle'</span>,<span class="string">'every-epoch'</span>, <span class="keyword">...</span>
+    <span class="string">'ValidationData'</span>,{xTest,yTest}, <span class="keyword">...</span>
+    <span class="string">'ValidationFrequency'</span>,5, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+
+net = trainNetwork(xTrain,yTrain,layers,options);
+</pre><pre class="codeoutput">
+layers = 
+
+  6&times;1 Layer array with layers:
+
+     1   ''   Sequence Input      Sequence input with 1 dimensions
+     2   ''   BiLSTM              BiLSTM with 100 hidden units
+     3   ''   Dropout             20% dropout
+     4   ''   BiLSTM              BiLSTM with 100 hidden units
+     5   ''   Fully Connected     2 fully connected layer
+     6   ''   Regression Output   mean-squared-error
+</pre><img vspace="5" hspace="5" src="OrbitLSTM_01.png" alt=""> <h2 id="4">Test the network</h2><pre class="codeinput">yPred      = predict(net,xTest);
+yPred(:,1) = yPred(:,1)*aMean;
+yTest(:,1) = yTest(:,1)*aMean;
+yM         = mean(yPred-yTest,1);
+fprintf(<span class="string">'\nbiLSTM\n'</span>);
+fprintf(<span class="string">'Mean semi-major axis error %12.4f (km)\n'</span>,yM(1));
+fprintf(<span class="string">'Mean eccentricity    error %12.4f\n'</span>,yM(2));
+</pre><pre class="codeoutput">
+biLSTM
+Mean semi-major axis error      98.1196 (km)
+Mean eccentricity    error      -0.0174
+</pre><h2 id="5">Plot the results</h2><pre class="codeinput">NewFigure(<span class="string">'Predictions using Feed Forward Network'</span>)
+subplot(2,1,1)
+bar(1:nTest,[yPred(:,1)';yTest(:,1)']);
+ylabel(<span class="string">'a'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+subplot(2,1,2)
+bar(1:nTest,[yPred(:,2)';yTest(:,2)']);
+ylabel(<span class="string">'e'</span>)
+legend(<span class="string">'Predicted'</span>,<span class="string">'True'</span>)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (1: Predictions using Feed Forward Network) with properties:
+
+      Number: 1
+        Name: 'Predictions using Feed Forward Network'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="OrbitLSTM_02.png" alt=""> <h2 id="6">Copyright</h2><p>Copyright (c) 2019 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script to train and test the Orbit LSTM
+% It will estimate the orbit semi-major axis and eccentricity from a 
+% time sequence of angle measurements. Loads OrbitData.mat
+%% See also
+% Orbits, sequenceInputLayer, bilstmLayer, dropoutLayer, fullyConnectedLayer,
+% regressionLayer, trainingOptions, trainNetwork, predict
+
+s           = load('OrbitData');
+n           = length(s.data);
+nTrain      = floor(0.9*n);
+
+%% Set up the training and test sets 
+kTrain      = randperm(n,nTrain);
+aMean       = mean([s.el(:).a]);
+xTrain      = s.data(kTrain);
+nTest       = n-nTrain;
+
+elTrain     = s.el(kTrain);
+yTrain      = [elTrain.a;elTrain.e]';
+yTrain(:,1) = yTrain(:,1)/aMean;
+kTest       = setdiff(1:n,kTrain);
+xTest       = s.data(kTest);
+
+elTest      = s.el(kTest);
+yTest       = [elTest.a;elTest.e]';
+yTest(:,1)  = yTest(:,1)/aMean;
+
+%% Train the network with validation
+numFeatures     = 1;
+numHiddenUnits1 = 100;
+numHiddenUnits2 = 100;
+numClasses      = 2;
+
+layers = [ ...
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits1,'OutputMode','sequence')
+    dropoutLayer(0.2)
+    bilstmLayer(numHiddenUnits2,'OutputMode','last')
+    fullyConnectedLayer(numClasses)
+    regressionLayer]
+  
+maxEpochs = 20;
+
+options = trainingOptions('adam', ...
+    'ExecutionEnvironment','cpu', ...
+    'GradientThreshold',1, ...
+    'MaxEpochs',maxEpochs, ...
+    'Shuffle','every-epoch', ...
+    'ValidationData',{xTest,yTest}, ...
+    'ValidationFrequency',5, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+  
+net = trainNetwork(xTrain,yTrain,layers,options);
+  
+%% Test the network
+yPred      = predict(net,xTest);
+yPred(:,1) = yPred(:,1)*aMean;
+yTest(:,1) = yTest(:,1)*aMean;
+yM         = mean(yPred-yTest,1);
+fprintf('\nbiLSTM\n');
+fprintf('Mean semi-major axis error %12.4f (km)\n',yM(1));
+fprintf('Mean eccentricity    error %12.4f\n',yM(2));
+
+%% Plot the results
+NewFigure('Predictions using Feed Forward Network')
+subplot(2,1,1)
+bar(1:nTest,[yPred(:,1)';yTest(:,1)']);
+ylabel('a')
+legend('Predicted','True')
+subplot(2,1,2)
+bar(1:nTest,[yPred(:,2)';yTest(:,2)']);
+ylabel('e')
+legend('Predicted','True')
+
+
+%% Copyright
+% Copyright (c) 2019 Princeton Satellite Systems, Inc.
+% All rights reserved.
+##### SOURCE END #####
+--></body></html>

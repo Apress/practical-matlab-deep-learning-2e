@@ -1,0 +1,482 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>music_generation_2</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-03"><meta name="DC.source" content="music_generation_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Generate the midi files</a></li><li><a href="#3">Supporting functions</a></li></ul></div><pre class="codeinput"><span class="comment">% clear workspace</span>
+clear
+<span class="comment">% load data</span>
+<span class="comment">% format: [st, pitch, dur, ks, ts, f]</span>
+<span class="comment">% st = start time (ignored)</span>
+<span class="comment">% dur = duration</span>
+<span class="comment">% ks = key signature (ignored)</span>
+<span class="comment">% ts = time signature (ignored)</span>
+<span class="comment">% f = fermata (ignored)</span>
+mats = load(<span class="string">'chorales_testmat.mat'</span>);
+fn = fieldnames(mats);
+<span class="comment">% store our data (pitches and durations) in a cell array.</span>
+chorale_cell = cell(numel(fn),1);
+<span class="keyword">for</span> k=1:numel(fn)
+   chorale_cell{k} = mats.(fn{k})(:,2:3);  <span class="comment">% get pitch + duration</span>
+<span class="keyword">end</span>
+<span class="comment">% get set of unique pitches and durations</span>
+big_seq = cat(1, chorale_cell{:});
+pitch_labels = sort(unique(big_seq(:,1)));
+dur_labels = sort(unique(big_seq(:,2)));
+dl = length(dur_labels);
+<span class="comment">% get indices corresponding to each musical event (pitch, duration)'s</span>
+<span class="comment">% location in the label arrays.</span>
+<span class="comment">% Use these indices along with encode_pd to generate a single label for</span>
+<span class="comment">% this event</span>
+<span class="comment">% label cell contains the "encoded" labels</span>
+label_cell = cell(numel(fn, 1));
+<span class="keyword">for</span> i=1:numel(chorale_cell)
+   seq = chorale_cell{i};
+   lseq = length(seq);
+   chorale_labels = zeros(lseq,1);
+   <span class="keyword">for</span> j = 1:lseq
+       pi = find(pitch_labels == seq(j,1));
+       di = find(dur_labels == seq(j, 2));
+       chorale_labels(j,1) = encode_pd(pi, di, dl);
+   <span class="keyword">end</span>
+   label_cell{i} = chorale_labels;
+<span class="keyword">end</span>
+<span class="comment">% divide data into input (X) and output (Y), where Y is just</span>
+<span class="comment">% X shifted by 1 to the future.</span>
+[X, Y] = get_xy(label_cell);
+<span class="comment">% don't just do uniq because we want it to be able to generate other</span>
+<span class="comment">% combinations</span>
+<span class="comment">% convert labels to categorical data for classification</span>
+<span class="comment">% note that we have a class for each possible combination of pitches</span>
+<span class="comment">% and durations (20*8 = 160), intead of just for the combinations that appear</span>
+<span class="comment">% in the dataset. This may allow for more interesting pieces that contain</span>
+<span class="comment">% patterns not seen in the training set.</span>
+Y = cellfun(@(x) categorical(x, 1:160) ,Y,<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% define LSTM</span>
+<span class="comment">% adapted from https://www.mathworks.com/help/deeplearning/ug/time-series-forecasting-using-deep-learning.html</span>
+<span class="comment">% define input, layer and output sizes</span>
+num_hidden_units = 256;
+input_shape = 1; <span class="comment">% num features</span>
+num_pitch_out = length(pitch_labels);
+num_dur_out = length(dur_labels);
+num_outputs = num_pitch_out*num_dur_out;
+<span class="comment">% Define model layers</span>
+layers = [ <span class="keyword">...</span>
+   sequenceInputLayer(input_shape, Name=<span class="string">'seq in'</span>)
+   lstmLayer(128,<span class="string">'OutputMode'</span>,<span class="string">'sequence'</span>, Name=<span class="string">'lstm'</span>)
+   softmaxLayer
+   fullyConnectedLayer(num_outputs, Name=<span class="string">'fc1'</span>)
+   softmaxLayer
+   fullyConnectedLayer(num_outputs, Name=<span class="string">'fc2'</span>)
+   softmaxLayer
+   classificationLayer(Name=<span class="string">'co'</span>)];
+<span class="comment">% optional regularization</span>
+layers(4) = setL2Factor(layers(4),<span class="string">'Weights'</span>,2);
+layers(6) = setL2Factor(layers(6),<span class="string">'Weights'</span>,2);
+<span class="comment">% Visualize the network</span>
+analyzeNetwork(layers)
+<span class="comment">% define training parameters</span>
+max_epochs = 400;
+<span class="comment">% use mini batch size of 1 to avoid padding</span>
+mini_bs = 1;
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+   <span class="string">'MaxEpochs'</span>,max_epochs, <span class="keyword">...</span>
+   <span class="string">'MiniBatchSize'</span>, mini_bs, <span class="keyword">...</span>
+   <span class="string">'InitialLearnRate'</span>,0.01, <span class="keyword">...</span>
+   <span class="string">'LearnRateSchedule'</span>,<span class="string">'piecewise'</span>, <span class="keyword">...</span>
+   <span class="string">'Shuffle'</span>, <span class="string">'every-epoch'</span>,<span class="keyword">...</span>
+   <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+   <span class="string">'LearnRateDropPeriod'</span>,100, <span class="keyword">...</span>
+   <span class="string">'LearnRateDropFactor'</span>,0.5, <span class="keyword">...</span>
+   <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+<span class="comment">% train LSTM</span>
+net = trainNetwork(X,Y,layers,options);
+</pre><pre class="codeoutput error">Undefined function 'sequenceInputLayer' for input arguments of type 'string'.
+
+Error in music_generation_2 (line 60)
+   sequenceInputLayer(input_shape, Name='seq in')
+</pre><h2 id="2">Generate the midi files</h2><pre class="codeinput">disp(<span class="string">'Training Complete'</span>)
+<span class="comment">% Get model going with training set, then generate new music</span>
+generate(net, X{50}, pitch_labels, dur_labels, dl, <span class="string">'new_test50_simple'</span>, <span class="string">'na'</span>);
+generate(net, X{25}, pitch_labels, dur_labels, dl, <span class="string">'new_test25_simple'</span>, <span class="string">'na'</span>);
+generate(net, X{10}, pitch_labels, dur_labels, dl, <span class="string">'new_test10_simple'</span>, <span class="string">'na'</span>);
+</pre><h2 id="3">Supporting functions</h2><pre class="codeinput"><span class="keyword">function</span> generate(net, test_seq, pitches, durs, dur_l, name, samp_mode)
+   test1 = test_seq;
+   hs = ceil(length(test1)/2);
+   <span class="comment">% set amount you want to generate</span>
+   num_test = 2*hs; <span class="comment">% generate to end of song plus half of song length</span>
+   <span class="keyword">for</span> i = 1:num_test
+       <span class="keyword">if</span> i == 1
+           <span class="comment">% use first half of song for the first prediction</span>
+           history = test1(:,1:hs);
+       <span class="keyword">else</span>
+           <span class="comment">% concate past history with last prediction to continue</span>
+           <span class="comment">% generating</span>
+           history = [history, last_pred];
+       <span class="keyword">end</span>
+       [net,pred] = predictAndUpdateState(net,history,<span class="string">'ExecutionEnvironment'</span>,<span class="string">'cpu'</span>);
+       last_preds = pred(:, end); <span class="comment">% get last prediction for concatenation</span>
+       <span class="comment">% In greedy mode, you take the highest probability event</span>
+       <span class="keyword">if</span> strcmp(samp_mode, <span class="string">'greedy'</span>)
+           [~, idx] = max(last_preds); <span class="comment">% greedy</span>
+           last_pred = idx;
+       <span class="keyword">else</span>
+           <span class="comment">% in sampling mode, you sample according to the distribution</span>
+           <span class="comment">% given by the model</span>
+           last_pred = randsample(length(last_preds),1,true,last_preds);
+       <span class="keyword">end</span>
+
+   <span class="keyword">end</span>
+   <span class="comment">% concatenate last predition</span>
+   history = [history, last_pred];
+
+   <span class="comment">% save outputs</span>
+   [ps,ds] = decode_label(test1, dur_l, pitches, durs);
+   <span class="comment">% save the entire example</span>
+   save_as_midi(ps, ds, strcat(name, <span class="string">'_samp_class_full_test'</span>));
+   [ps,ds] = decode_label(test1(:,1:hs), dur_l, pitches, durs);
+   <span class="comment">% save the first half of the example to see where generation starts</span>
+   save_as_midi(ps, ds, strcat(name,<span class="string">'_samp_class_in'</span>));
+   [ps,ds] = decode_label(history, dur_l, pitches, durs);
+   <span class="comment">% save the input plus the generated output.</span>
+   newFile = strcat(name, <span class="string">'_samp_class_in_plus_gen'</span>);
+   save_as_midi(ps, ds, newFile);
+   fprintf(<span class="string">'MIDI file %s\n'</span>,newFile)
+<span class="keyword">end</span>
+<span class="comment">% converts a sequence to input and output for our next step</span>
+<span class="comment">% prediction objective</span>
+<span class="keyword">function</span> [x, y]= get_xy(seqs)
+   x = cell(length(seqs),1);
+   y = cell(length(seqs),1);
+   <span class="keyword">for</span> i = 1:length(seqs)
+       x{i} = seqs{i}(1:end-1,:);
+       y{i} = seqs{i}(2:end,:);
+   <span class="keyword">end</span>
+   x = cellfun(@transpose,x,<span class="string">'UniformOutput'</span>,false);
+   y = cellfun(@transpose,y,<span class="string">'UniformOutput'</span>,false);
+<span class="keyword">end</span>
+<span class="comment">% converts output to nmat and saves as midi</span>
+<span class="comment">%[st pitch dur ks ts f] &lt;-- our format</span>
+<span class="comment">%[st dur channel pitch velocity st(s) dur(s)] &lt;-- midi toolbox nmat</span>
+<span class="comment">% uses nmat functionality from:</span>
+<span class="comment">% https://www.jyu.fi/hytk/fi/laitokset/mutku/en/research/materials/miditoolbox</span>
+<span class="keyword">function</span> save_as_midi(pitches, durs, name)
+   out_s = length(pitches);
+   fprintf(<span class="string">'The length of the pitches is %d\n'</span>,out_s);
+   nmat = zeros(out_s, 7);
+   nmat(:,2) = durs; <span class="comment">% duration</span>
+   nmat(:, 4) = pitches; <span class="comment">% pitch</span>
+   onsets = zeros(out_s,1);
+   onsets(1) = 0;
+   <span class="keyword">for</span> i = 1:out_s-1
+       <span class="comment">% get current onset by adding previous duration to previous onset</span>
+       onsets(i+1) = onsets(i) + durs(i);
+   <span class="keyword">end</span>
+   nmat(:,1) = onsets; <span class="comment">% onsets</span>
+
+   nmat(:,3) = ones(out_s,1); <span class="comment">% channel range: 1-16, choice is arbitrary here</span>
+   velocity = 50; <span class="comment">%  1-127</span>
+   nmat(:,5) = velocity*ones(out_s,1); <span class="comment">% velocity, choice is arbitrary here</span>
+   <span class="comment">% these determine tempo</span>
+   t_ratio = 15;
+   nmat(:,6) = nmat(:,1)/t_ratio; <span class="comment">% start time (s)</span>
+   nmat(:,7) = nmat(:,2)/t_ratio; <span class="comment">% duration (s)</span>
+   writemidi(nmat, strcat(name,<span class="string">'.midi'</span>));
+<span class="keyword">end</span>
+<span class="comment">% i = pitch index --&gt; i = 1:length(pitch_labels)</span>
+<span class="comment">% j = duration index --&gt; j = 1:length(dur_labels)</span>
+<span class="comment">% dl = number of possible durations = length(dur_labels)</span>
+<span class="comment">% label for i,j combination = (i-1)*length(dur_labels) + j</span>
+<span class="keyword">function</span> label = encode_pd(i,j, dl)
+   label = (i-1)*dl + j;
+<span class="keyword">end</span>
+<span class="comment">% reverses encode_pd (label = (i-1)*dl + j)</span>
+<span class="comment">% mod(label, dl) gives j.</span>
+<span class="comment">% (label - j + dl)/dl = i</span>
+<span class="comment">% note that label is a vector here (from the model output)</span>
+<span class="keyword">function</span> [pitch,duration] = decode_label(label, dl, pitches, durations)
+   j = mod(label, dl);
+   <span class="comment">% if j = dl, label%dl = 0. For our math to work out,</span>
+   <span class="comment">% we want j = dl, not 0. so set all entries where the vector</span>
+   <span class="comment">% j = 0 to dl.</span>
+   <span class="comment">% since matlab indexing starts at 1, we don't have to worry about</span>
+   <span class="comment">% confusing j = 0 with j = 8.</span>
+   k = find(j == 0);
+   j(k) = dl;
+   i = (label - j + dl)/dl;
+   pitch = pitches(i);
+   duration = durations(j);
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% clear workspace
+clear
+% load data
+% format: [st, pitch, dur, ks, ts, f]
+% st = start time (ignored)
+% dur = duration
+% ks = key signature (ignored)
+% ts = time signature (ignored)
+% f = fermata (ignored)
+mats = load('chorales_testmat.mat');
+fn = fieldnames(mats);
+% store our data (pitches and durations) in a cell array.
+chorale_cell = cell(numel(fn),1);
+for k=1:numel(fn)
+   chorale_cell{k} = mats.(fn{k})(:,2:3);  % get pitch + duration
+end
+% get set of unique pitches and durations
+big_seq = cat(1, chorale_cell{:});
+pitch_labels = sort(unique(big_seq(:,1)));
+dur_labels = sort(unique(big_seq(:,2)));
+dl = length(dur_labels);
+% get indices corresponding to each musical event (pitch, duration)'s
+% location in the label arrays.
+% Use these indices along with encode_pd to generate a single label for
+% this event
+% label cell contains the "encoded" labels
+label_cell = cell(numel(fn, 1));
+for i=1:numel(chorale_cell)
+   seq = chorale_cell{i};
+   lseq = length(seq);
+   chorale_labels = zeros(lseq,1);
+   for j = 1:lseq
+       pi = find(pitch_labels == seq(j,1));
+       di = find(dur_labels == seq(j, 2));
+       chorale_labels(j,1) = encode_pd(pi, di, dl);
+   end
+   label_cell{i} = chorale_labels;
+end
+% divide data into input (X) and output (Y), where Y is just
+% X shifted by 1 to the future.
+[X, Y] = get_xy(label_cell);
+% don't just do uniq because we want it to be able to generate other
+% combinations
+% convert labels to categorical data for classification
+% note that we have a class for each possible combination of pitches
+% and durations (20*8 = 160), intead of just for the combinations that appear
+% in the dataset. This may allow for more interesting pieces that contain
+% patterns not seen in the training set.
+Y = cellfun(@(x) categorical(x, 1:160) ,Y,'UniformOutput',false);
+% define LSTM
+% adapted from https://www.mathworks.com/help/deeplearning/ug/time-series-forecasting-using-deep-learning.html
+% define input, layer and output sizes
+num_hidden_units = 256;
+input_shape = 1; % num features
+num_pitch_out = length(pitch_labels);
+num_dur_out = length(dur_labels);
+num_outputs = num_pitch_out*num_dur_out;
+% Define model layers
+layers = [ ...
+   sequenceInputLayer(input_shape, Name='seq in')
+   lstmLayer(128,'OutputMode','sequence', Name='lstm')
+   softmaxLayer
+   fullyConnectedLayer(num_outputs, Name='fc1')
+   softmaxLayer
+   fullyConnectedLayer(num_outputs, Name='fc2')
+   softmaxLayer
+   classificationLayer(Name='co')];
+% optional regularization
+layers(4) = setL2Factor(layers(4),'Weights',2);
+layers(6) = setL2Factor(layers(6),'Weights',2);
+% Visualize the network
+analyzeNetwork(layers)
+% define training parameters
+max_epochs = 400;
+% use mini batch size of 1 to avoid padding
+mini_bs = 1;
+options = trainingOptions('adam', ...
+   'MaxEpochs',max_epochs, ...
+   'MiniBatchSize', mini_bs, ...
+   'InitialLearnRate',0.01, ...
+   'LearnRateSchedule','piecewise', ...
+   'Shuffle', 'every-epoch',...
+   'Verbose',0, ...
+   'LearnRateDropPeriod',100, ...
+   'LearnRateDropFactor',0.5, ...
+   'Plots','training-progress');
+% train LSTM
+net = trainNetwork(X,Y,layers,options);
+
+%% Generate the midi files
+disp('Training Complete')
+% Get model going with training set, then generate new music
+generate(net, X{50}, pitch_labels, dur_labels, dl, 'new_test50_simple', 'na');
+generate(net, X{25}, pitch_labels, dur_labels, dl, 'new_test25_simple', 'na');
+generate(net, X{10}, pitch_labels, dur_labels, dl, 'new_test10_simple', 'na');
+
+%% Supporting functions
+function generate(net, test_seq, pitches, durs, dur_l, name, samp_mode)
+   test1 = test_seq;
+   hs = ceil(length(test1)/2);
+   % set amount you want to generate
+   num_test = 2*hs; % generate to end of song plus half of song length
+   for i = 1:num_test
+       if i == 1
+           % use first half of song for the first prediction
+           history = test1(:,1:hs);
+       else
+           % concate past history with last prediction to continue
+           % generating
+           history = [history, last_pred];
+       end
+       [net,pred] = predictAndUpdateState(net,history,'ExecutionEnvironment','cpu');
+       last_preds = pred(:, end); % get last prediction for concatenation
+       % In greedy mode, you take the highest probability event
+       if strcmp(samp_mode, 'greedy')
+           [~, idx] = max(last_preds); % greedy
+           last_pred = idx;
+       else
+           % in sampling mode, you sample according to the distribution
+           % given by the model
+           last_pred = randsample(length(last_preds),1,true,last_preds);
+       end
+      
+   end
+   % concatenate last predition
+   history = [history, last_pred];
+  
+   % save outputs
+   [ps,ds] = decode_label(test1, dur_l, pitches, durs);
+   % save the entire example
+   save_as_midi(ps, ds, strcat(name, '_samp_class_full_test'));
+   [ps,ds] = decode_label(test1(:,1:hs), dur_l, pitches, durs);
+   % save the first half of the example to see where generation starts
+   save_as_midi(ps, ds, strcat(name,'_samp_class_in'));
+   [ps,ds] = decode_label(history, dur_l, pitches, durs);
+   % save the input plus the generated output.
+   newFile = strcat(name, '_samp_class_in_plus_gen');
+   save_as_midi(ps, ds, newFile);
+   fprintf('MIDI file %s\n',newFile)
+end
+% converts a sequence to input and output for our next step
+% prediction objective
+function [x, y]= get_xy(seqs)
+   x = cell(length(seqs),1);
+   y = cell(length(seqs),1);
+   for i = 1:length(seqs)
+       x{i} = seqs{i}(1:end-1,:);
+       y{i} = seqs{i}(2:end,:);
+   end
+   x = cellfun(@transpose,x,'UniformOutput',false);
+   y = cellfun(@transpose,y,'UniformOutput',false);
+end
+% converts output to nmat and saves as midi
+%[st pitch dur ks ts f] <REPLACE_WITH_DASH_DASH our format
+%[st dur channel pitch velocity st(s) dur(s)] <REPLACE_WITH_DASH_DASH midi toolbox nmat
+% uses nmat functionality from:
+% https://www.jyu.fi/hytk/fi/laitokset/mutku/en/research/materials/miditoolbox
+function save_as_midi(pitches, durs, name)
+   out_s = length(pitches);
+   fprintf('The length of the pitches is %d\n',out_s);
+   nmat = zeros(out_s, 7);
+   nmat(:,2) = durs; % duration
+   nmat(:, 4) = pitches; % pitch
+   onsets = zeros(out_s,1);
+   onsets(1) = 0;
+   for i = 1:out_s-1
+       % get current onset by adding previous duration to previous onset
+       onsets(i+1) = onsets(i) + durs(i);
+   end
+   nmat(:,1) = onsets; % onsets
+  
+   nmat(:,3) = ones(out_s,1); % channel range: 1-16, choice is arbitrary here
+   velocity = 50; %  1-127
+   nmat(:,5) = velocity*ones(out_s,1); % velocity, choice is arbitrary here
+   % these determine tempo
+   t_ratio = 15;
+   nmat(:,6) = nmat(:,1)/t_ratio; % start time (s)
+   nmat(:,7) = nmat(:,2)/t_ratio; % duration (s)
+   writemidi(nmat, strcat(name,'.midi'));
+end
+% i = pitch index REPLACE_WITH_DASH_DASH> i = 1:length(pitch_labels)
+% j = duration index REPLACE_WITH_DASH_DASH> j = 1:length(dur_labels)
+% dl = number of possible durations = length(dur_labels)
+% label for i,j combination = (i-1)*length(dur_labels) + j
+function label = encode_pd(i,j, dl)
+   label = (i-1)*dl + j;
+end
+% reverses encode_pd (label = (i-1)*dl + j)
+% mod(label, dl) gives j.
+% (label - j + dl)/dl = i
+% note that label is a vector here (from the model output)
+function [pitch,duration] = decode_label(label, dl, pitches, durations)
+   j = mod(label, dl);
+   % if j = dl, label%dl = 0. For our math to work out,
+   % we want j = dl, not 0. so set all entries where the vector
+   % j = 0 to dl.
+   % since matlab indexing starts at 1, we don't have to worry about
+   % confusing j = 0 with j = 8. 
+   k = find(j == 0);
+   j(k) = dl;
+   i = (label - j + dl)/dl;
+   pitch = pitches(i);
+   duration = durations(j);
+end
+
+##### SOURCE END #####
+--></body></html>

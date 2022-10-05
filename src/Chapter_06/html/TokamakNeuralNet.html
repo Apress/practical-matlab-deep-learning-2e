@@ -1,0 +1,309 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Use LSTM to classify time sequences from the tokamak simulation</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-05"><meta name="DC.source" content="TokamakNeuralNet.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Use LSTM to classify time sequences from the tokamak simulation</h1><!--introduction--><p>Run the simulation mutiple times classifying each run. A disruption occurs when the position exceeds the maximum allowable. Each sequence has one feature, z.</p><p>See also: RHSTokamak, ELM, PlotSet, RungeKutta, TimeLabel, trainNetwork, classify</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Constants</a></li><li><a href="#2">Initial conditions</a></li><li><a href="#3">Design the controller</a></li><li><a href="#4">Run n simulations</a></li><li><a href="#5">Classify the results</a></li><li><a href="#6">Divide into training and testing data</a></li><li><a href="#7">Train the neural net</a></li><li><a href="#8">Demonstrate the neural net</a></li><li><a href="#9">Test the network</a></li><li><a href="#10">Copyright</a></li></ul></div><h2 id="1">Constants</h2><pre class="codeinput">d           = RHSTokamak;
+tau1ELM     = 6.0e-4;   <span class="comment">% ELM time constant 1</span>
+tau2ELM     = 1.7e-4;   <span class="comment">% ELM time constant 2</span>
+kELM        = 1.5e-6;   <span class="comment">% ELM gain matches Figure 2.9 in Reference 2</span>
+tRepELM     = 48e-3;   	<span class="comment">% ELM repetition time (s)</span>
+controlOn   = true;     <span class="comment">% Turns on the controller</span>
+disThresh   = 1.6e-6;   <span class="comment">% This is the threshold for a disruption</span>
+
+<span class="comment">% The control sampling period and the simulation integration time step</span>
+dT = 1e-5;
+
+<span class="comment">% Number of sim steps</span>
+nSim = 300; <span class="comment">% nominally 2000</span>
+
+<span class="comment">% Number of tests</span>
+n         = 100;
+sigma1ELM = 2e-6*abs(rand(1,n));
+
+PlotSet(1:n,sigma1ELM,<span class="string">'x label'</span>,<span class="string">'Test Case'</span>,<span class="string">'y label'</span>,<span class="string">'1 \sigma ELM Value'</span>);
+</pre><pre class="codeoutput">Eigenvalues
+
+ Mode 1        -2.67
+ Mode 2       115.16
+</pre><img vspace="5" hspace="5" src="TokamakNeuralNet_01.png" alt=""> <h2 id="2">Initial conditions</h2><pre class="codeinput">x    = [0;0;0]; <span class="comment">% The state of the plasma</span>
+tRep = 0.001; <span class="comment">% Time for the 1st ELM</span>
+</pre><h2 id="3">Design the controller</h2><pre class="codeinput">kControl = QCR( d.aS, d.bS(:,1), eye(2), 1 );
+</pre><h2 id="4">Run n simulations</h2><pre class="codeinput">s     = cell(n,1);
+zData = zeros(1,nSim); <span class="comment">% Storage for vertical position</span>
+<span class="keyword">for</span> j = 1:n
+	<span class="comment">% Run the simulation</span>
+  t     = 0;
+  tELM	= inf; <span class="comment">% Prevents an ELM at the start</span>
+	kELM  = sigma1ELM(j);
+  tRep	= 0.001; <span class="comment">% Time for the 1st ELM</span>
+
+  <span class="keyword">for</span> k = 1:nSim
+    <span class="keyword">if</span>( controlOn )
+      d.vC = -kControl*x(1:2);
+    <span class="keyword">else</span>
+      d.vC	= 0; <span class="comment">%#ok&lt;UNRCH&gt;</span>
+    <span class="keyword">end</span>
+
+    d.eLM	= ELM( tau1ELM, tau2ELM, kELM, tELM );
+    tELM 	= tELM + dT;
+
+    <span class="comment">% Trigger another ELM</span>
+    <span class="keyword">if</span>( t &gt; tRep + rand*tRepELM )
+      tELM	= 0;
+      tRep	= t;
+    <span class="keyword">end</span>
+
+    x          = RungeKutta( @RHSTokamak, x, t, dT, d );
+    [~,z]      = RHSTokamak( x, t, d );
+    t          = t + dT;
+    zData(1,k) = z;
+  <span class="keyword">end</span>
+  s{j} = zData;
+<span class="keyword">end</span>
+
+clear <span class="string">c</span>
+</pre><h2 id="5">Classify the results</h2><pre class="codeinput">j       = find(sigma1ELM &gt; disThresh);
+jN      = find(sigma1ELM &lt; disThresh);
+c(j,1)  = 1;
+c(jN,1) = 0;
+fprintf(<span class="string">'Found %d disruptions and %d stable simulations\n'</span>,nnz(j),nnz(jN))
+
+<span class="comment">% Plot one example of each type, disrupted and stable</span>
+[t,tL] = TimeLabel((0:nSim-1)*dT);
+PlotSet(t,[s{j(1)};s{jN(1)}],<span class="string">'x label'</span>,tL,<span class="string">'y label'</span>,<span class="string">'z (m)'</span>,<span class="string">'Plot Set'</span>,{1:2},<span class="string">'legend'</span>,{{<span class="string">'disruption'</span>,<span class="string">'stable'</span>}});
+</pre><pre class="codeoutput">Found 25 disruptions and 75 stable simulations
+</pre><img vspace="5" hspace="5" src="TokamakNeuralNet_02.png" alt=""> <h2 id="6">Divide into training and testing data</h2><pre class="codeinput">nTrain  = floor(0.8*n); <span class="comment">% Train on 80% of the cases</span>
+xTrain  = s(1:nTrain);
+yTrain  = categorical(c(1:nTrain));
+xTest   = s(nTrain+1:n);
+yTest   = categorical(c(nTrain+1:n));
+</pre><h2 id="7">Train the neural net</h2><pre class="codeinput">numFeatures     = 1; <span class="comment">% Just the plasma position</span>
+numClasses      = 2; <span class="comment">% Disruption or non disrupton</span>
+numHiddenUnits  = 200;
+
+layers = [ <span class="keyword">...</span>
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,<span class="string">'OutputMode'</span>,<span class="string">'last'</span>)
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,60, <span class="keyword">...</span>
+    <span class="string">'GradientThreshold'</span>,2, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+
+net = trainNetwork(xTrain,yTrain,layers,options);
+</pre><pre class="codeoutput">  5&times;1 Layer array with layers:
+
+     1   ''   Sequence Input          Sequence input with 1 dimensions
+     2   ''   BiLSTM                  BiLSTM with 200 hidden units
+     3   ''   Fully Connected         2 fully connected layer
+     4   ''   Softmax                 softmax
+     5   ''   Classification Output   crossentropyex
+</pre><img vspace="5" hspace="5" src="TokamakNeuralNet_03.png" alt=""> <h2 id="8">Demonstrate the neural net</h2><h2 id="9">Test the network</h2><pre class="codeinput">yPred  	= classify(net,xTest);
+
+<span class="comment">% Calculate the classification accuracy of the predictions.</span>
+acc         = sum(yPred == yTest)./numel(yTest);
+disp(<span class="string">'Accuracy'</span>)
+disp(acc);
+</pre><pre class="codeoutput">Accuracy
+         0.85
+
+</pre><h2 id="10">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Use LSTM to classify time sequences from the tokamak simulation
+% Run the simulation mutiple times classifying each run. A disruption
+% occurs when the position exceeds the maximum allowable. Each sequence has
+% one feature, z.
+%
+% See also: RHSTokamak, ELM, PlotSet, RungeKutta, TimeLabel, trainNetwork,
+% classify
+
+%% Constants
+d           = RHSTokamak;                                      
+tau1ELM     = 6.0e-4;   % ELM time constant 1
+tau2ELM     = 1.7e-4;   % ELM time constant 2
+kELM        = 1.5e-6;   % ELM gain matches Figure 2.9 in Reference 2
+tRepELM     = 48e-3;   	% ELM repetition time (s)
+controlOn   = true;     % Turns on the controller
+disThresh   = 1.6e-6;   % This is the threshold for a disruption
+
+% The control sampling period and the simulation integration time step
+dT = 1e-5;
+
+% Number of sim steps
+nSim = 300; % nominally 2000
+
+% Number of tests
+n         = 100;
+sigma1ELM = 2e-6*abs(rand(1,n));
+
+PlotSet(1:n,sigma1ELM,'x label','Test Case','y label','1 \sigma ELM Value');
+
+%% Initial conditions
+x    = [0;0;0]; % The state of the plasma
+tRep = 0.001; % Time for the 1st ELM
+
+%% Design the controller
+kControl = QCR( d.aS, d.bS(:,1), eye(2), 1 );
+
+%% Run n simulations
+s     = cell(n,1);
+zData = zeros(1,nSim); % Storage for vertical position
+for j = 1:n
+	% Run the simulation
+  t     = 0;
+  tELM	= inf; % Prevents an ELM at the start
+	kELM  = sigma1ELM(j);
+  tRep	= 0.001; % Time for the 1st ELM
+
+  for k = 1:nSim 
+    if( controlOn )
+      d.vC = -kControl*x(1:2);
+    else
+      d.vC	= 0; %#ok<UNRCH>
+    end
+  
+    d.eLM	= ELM( tau1ELM, tau2ELM, kELM, tELM );
+    tELM 	= tELM + dT;
+  
+    % Trigger another ELM
+    if( t > tRep + rand*tRepELM )
+      tELM	= 0;
+      tRep	= t;
+    end
+  
+    x          = RungeKutta( @RHSTokamak, x, t, dT, d );
+    [~,z]      = RHSTokamak( x, t, d );
+    t          = t + dT; 
+    zData(1,k) = z;   
+  end
+  s{j} = zData;
+end
+
+clear c
+
+%% Classify the results
+j       = find(sigma1ELM > disThresh);
+jN      = find(sigma1ELM < disThresh);
+c(j,1)  = 1;
+c(jN,1) = 0;
+fprintf('Found %d disruptions and %d stable simulations\n',nnz(j),nnz(jN))
+
+% Plot one example of each type, disrupted and stable
+[t,tL] = TimeLabel((0:nSim-1)*dT);
+PlotSet(t,[s{j(1)};s{jN(1)}],'x label',tL,'y label','z (m)','Plot Set',{1:2},'legend',{{'disruption','stable'}});
+
+%% Divide into training and testing data
+nTrain  = floor(0.8*n); % Train on 80% of the cases
+xTrain  = s(1:nTrain);
+yTrain  = categorical(c(1:nTrain));
+xTest   = s(nTrain+1:n);
+yTest   = categorical(c(nTrain+1:n));
+
+%% Train the neural net
+numFeatures     = 1; % Just the plasma position
+numClasses      = 2; % Disruption or non disrupton
+numHiddenUnits  = 200;
+
+layers = [ ...
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+
+options = trainingOptions('adam', ...
+    'MaxEpochs',60, ...
+    'GradientThreshold',2, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+  
+net = trainNetwork(xTrain,yTrain,layers,options);
+
+%% Demonstrate the neural net
+
+%%% Test the network
+yPred  	= classify(net,xTest);
+
+% Calculate the classification accuracy of the predictions.
+acc         = sum(yPred == yTest)./numel(yTest);
+disp('Accuracy')
+disp(acc);
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

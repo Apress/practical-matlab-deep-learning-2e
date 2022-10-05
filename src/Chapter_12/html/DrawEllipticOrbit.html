@@ -1,0 +1,179 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>DrawEllipticOrbit</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="DrawEllipticOrbit.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Draw orbital elements</a></li><li><a href="#2">Copyright</a></li></ul></div><h2 id="1">Draw orbital elements</h2><p>See also El2RV, NewFigure, Unit</p><pre class="codeinput">m  = linspace(0,2*pi);
+n  = length(m);
+el = [repmat([9000;0.5;0.3;0.2;0.3],1,n);m];
+
+[r,v]  = El2RV(el);
+
+NewFigure(<span class="string">'Elliptic Orbit'</span>)
+plot3(r(1,:),r(2,:),r(3,:));
+grid <span class="string">on</span>
+
+<span class="comment">% Scale factor for lines on plots</span>
+l  = 10000;
+
+<span class="comment">% Axes</span>
+line([0 l],[0 0],[0 0],<span class="string">'color'</span>,<span class="string">'k'</span>)
+line([0 0],[0 l],[0 0],<span class="string">'color'</span>,<span class="string">'k'</span>)
+line([0 0],[0 0],[0 l],<span class="string">'color'</span>,<span class="string">'k'</span>)
+text(l,0,0,<span class="string">'x_{ECI}'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+text(0,l,0,<span class="string">'y_{ECI}'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+text(0,0,l,<span class="string">'z_{ECI}'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+
+<span class="comment">% Normal</span>
+h = l*Unit(cross(r(:,1),v(:,1)));
+line([0 h(1)],[0 h(2)], [0 h(3)],<span class="string">'color'</span>,<span class="string">'r'</span>);
+text(h(1),h(2),h(3),<span class="string">'Normal'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+
+<span class="comment">% Line of Nodes</span>
+n = l*Unit(cross([0;0;1],h));
+line([0 n(1)],[0 n(2)], [0 n(3)],<span class="string">'color'</span>,<span class="string">'g'</span>);
+text(n(1),n(2),n(3),<span class="string">'Line of Nodes'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+
+<span class="comment">% Eccentricity vector</span>
+r    = r(:,1);
+v    = v(:,1);
+rV   = r'*v;
+vSq  = v'*v;
+rMag = sqrt(r'*r);
+mu   = 3.98600436e5; <span class="comment">% Earth</span>
+e    = l*Unit(((vSq - mu/rMag)*r - rV*v)/mu);
+line([0 e(1)],[0 e(2)], [0 e(3)],<span class="string">'color'</span>,<span class="string">'m'</span>);
+text(e(1),e(2),e(3),<span class="string">'Eccentricity Vector'</span>,<span class="string">'interpreter'</span>,<span class="string">'tex'</span>)
+set(gca,<span class="string">'xticklabel'</span>,{},<span class="string">'yticklabel'</span>,{},<span class="string">'zticklabel'</span>,{})
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (1: Elliptic Orbit) with properties:
+
+      Number: 1
+        Name: 'Elliptic Orbit'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="DrawEllipticOrbit_01.png" alt=""> <h2 id="2">Copyright</h2><p>Copyright (c) 2019 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Draw orbital elements
+% See also El2RV, NewFigure, Unit
+
+m  = linspace(0,2*pi);
+n  = length(m);
+el = [repmat([9000;0.5;0.3;0.2;0.3],1,n);m];
+
+[r,v]  = El2RV(el);
+
+NewFigure('Elliptic Orbit')
+plot3(r(1,:),r(2,:),r(3,:));
+grid on
+
+% Scale factor for lines on plots
+l  = 10000;
+
+% Axes
+line([0 l],[0 0],[0 0],'color','k')
+line([0 0],[0 l],[0 0],'color','k')
+line([0 0],[0 0],[0 l],'color','k')
+text(l,0,0,'x_{ECI}','interpreter','tex')
+text(0,l,0,'y_{ECI}','interpreter','tex')
+text(0,0,l,'z_{ECI}','interpreter','tex')
+
+% Normal
+h = l*Unit(cross(r(:,1),v(:,1)));
+line([0 h(1)],[0 h(2)], [0 h(3)],'color','r');
+text(h(1),h(2),h(3),'Normal','interpreter','tex')
+
+% Line of Nodes
+n = l*Unit(cross([0;0;1],h));
+line([0 n(1)],[0 n(2)], [0 n(3)],'color','g');
+text(n(1),n(2),n(3),'Line of Nodes','interpreter','tex')
+
+% Eccentricity vector
+r    = r(:,1);
+v    = v(:,1);
+rV   = r'*v;
+vSq  = v'*v;
+rMag = sqrt(r'*r);
+mu   = 3.98600436e5; % Earth
+e    = l*Unit(((vSq - mu/rMag)*r - rV*v)/mu);
+line([0 e(1)],[0 e(2)], [0 e(3)],'color','m');
+text(e(1),e(2),e(3),'Eccentricity Vector','interpreter','tex')
+set(gca,'xticklabel',{},'yticklabel',{},'zticklabel',{})
+
+
+%% Copyright
+% Copyright (c) 2019 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

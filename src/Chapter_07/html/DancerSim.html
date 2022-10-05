@@ -1,0 +1,231 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Script to simulate a dancer</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="DancerSim.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Script to simulate a dancer</h1><!--introduction--><p>See also RHSDancer, RungeKutta, PlotSet</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set up the simulation</a></li><li><a href="#2">Simulate</a></li><li><a href="#3">Plotting</a></li><li><a href="#4">Copyright</a></li></ul></div><h2 id="1">Set up the simulation</h2><pre class="codeinput">d       = RHSDancer;
+n       = 800;
+dT      = 0.01;
+xP      = zeros(16,n);
+x       = zeros(12,1);
+x(3)    = 1;
+g       = 9.806;
+dancer  = <span class="string">'Robot_1'</span>;
+
+<span class="comment">% Control system for 2 pirouettes in 6 seconds</span>
+tPirouette  = 6;
+zPointe     = 6*0.0254;
+tPointe     = 0.1;
+kP          = tPointe/dT;
+omega       = 4*pi/tPirouette;
+torquePulse = d.inertia(3,3)*omega/tPointe;
+tFriction   = 0.1;
+a           = 2*zPointe/tPointe^2 + g;
+kForce      = 1000;
+tau         = 0.5;
+thetaStop   = 4*pi - pi/4;
+kTorque     = 200;
+state       = zeros(10,n);
+</pre><h2 id="2">Simulate</h2><pre class="codeinput"><span class="keyword">for</span> k = 1:n
+  d.torqueH = 0;
+  d.torqueI = 0;
+
+  <span class="comment">% Get the data for use in the neural netwoork</span>
+  xDot = RHSDancer(0,x,d);
+
+  state(:,k) = [x(7:9);0;0;xDot(2);x(3:6)];
+
+  <span class="comment">% Control</span>
+  <span class="keyword">if</span>( k &lt; kP )
+    d.force  = d.mass*a;
+    d.torque = [0;0;torquePulse];
+  <span class="keyword">else</span>
+    d.force  = kForce*(zPointe-x(1) -x(2)/tau)+ d.mass*g;
+    d.torque = [0;0;-tFriction];
+  <span class="keyword">end</span>
+
+  <span class="keyword">if</span>( x(12) &gt; thetaStop )
+    d.torqueI = kTorque*x(9);
+  <span class="keyword">end</span>
+
+  xP(:,k)   = [x;d.force;d.torque(3);d.torqueH;d.torqueI];
+  x         = RungeKutta(@RHSDancer,0,x,dT,d);
+<span class="keyword">end</span>
+</pre><h2 id="3">Plotting</h2><pre class="codeinput">time   = (0:n-1)*dT;
+
+yL  = { <span class="string">'z (m)'</span> <span class="string">'v (m/s)'</span> <span class="string">'q_s'</span> <span class="string">'q_x'</span> <span class="string">'q_y'</span> <span class="string">'q_z'</span> <span class="keyword">...</span>
+        <span class="string">'\omega_x (rad/s)'</span> <span class="string">'\omega_y (rad/s)'</span> <span class="string">'\omega_z (rad/s)'</span> <span class="keyword">...</span>
+        <span class="string">'\omega_h (rad/s)'</span> <span class="string">'\omega_i (rad/s)'</span> <span class="string">'\theta_z'</span> <span class="string">'F (N)'</span>,<span class="keyword">...</span>
+        <span class="string">'T_z (Nm)'</span> <span class="string">'T_H (Nm)'</span> <span class="string">'T_I (Nm)'</span>};
+
+k = [1 2 13];
+PlotSet(time,xP(k,:),<span class="string">'x label'</span>, <span class="string">'Time (sec)'</span>,<span class="string">'y label'</span>,yL(k),<span class="keyword">...</span>
+        <span class="string">'figure title'</span>,<span class="string">'Dancer Translation'</span>);
+
+k = 13:16;
+PlotSet(time,xP(k,:),<span class="string">'x label'</span>, <span class="string">'Time (sec)'</span>,<span class="string">'y label'</span>,yL(k),<span class="keyword">...</span>
+        <span class="string">'figure title'</span>,<span class="string">'Forces and Torque'</span>);
+
+k = [6 9 10 11 12];
+PlotSet(time,xP(k,:),<span class="string">'x label'</span>, <span class="string">'Time (sec)'</span>,<span class="string">'y label'</span>,yL(k),<span class="keyword">...</span>
+        <span class="string">'figure title'</span>,<span class="string">'Rotation'</span>);
+
+<span class="comment">% Save the data</span>
+cd <span class="string">TestData/</span>
+save(dancer,<span class="string">'state'</span>,<span class="string">'time'</span>);
+
+cd <span class="string">..</span>
+</pre><img vspace="5" hspace="5" src="DancerSim_01.png" alt=""> <img vspace="5" hspace="5" src="DancerSim_02.png" alt=""> <img vspace="5" hspace="5" src="DancerSim_03.png" alt=""> <h2 id="4">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script to simulate a dancer
+% See also RHSDancer, RungeKutta, PlotSet
+
+%% Set up the simulation
+d       = RHSDancer;
+n       = 800;
+dT      = 0.01;
+xP      = zeros(16,n);
+x       = zeros(12,1);
+x(3)    = 1;
+g       = 9.806;
+dancer  = 'Robot_1';
+
+% Control system for 2 pirouettes in 6 seconds
+tPirouette  = 6;
+zPointe     = 6*0.0254;
+tPointe     = 0.1;
+kP          = tPointe/dT;
+omega       = 4*pi/tPirouette;
+torquePulse = d.inertia(3,3)*omega/tPointe;
+tFriction   = 0.1;
+a           = 2*zPointe/tPointe^2 + g;
+kForce      = 1000;
+tau         = 0.5;
+thetaStop   = 4*pi - pi/4;
+kTorque     = 200;
+state       = zeros(10,n);
+
+
+%% Simulate
+for k = 1:n
+  d.torqueH = 0;
+  d.torqueI = 0;
+  
+  % Get the data for use in the neural netwoork
+  xDot = RHSDancer(0,x,d);
+  
+  state(:,k) = [x(7:9);0;0;xDot(2);x(3:6)];
+  
+  % Control
+  if( k < kP )
+    d.force  = d.mass*a;
+    d.torque = [0;0;torquePulse];
+  else
+    d.force  = kForce*(zPointe-x(1) -x(2)/tau)+ d.mass*g;
+    d.torque = [0;0;-tFriction];
+  end
+  
+  if( x(12) > thetaStop )
+    d.torqueI = kTorque*x(9);
+  end
+
+  xP(:,k)   = [x;d.force;d.torque(3);d.torqueH;d.torqueI];
+  x         = RungeKutta(@RHSDancer,0,x,dT,d);
+end
+
+%% Plotting
+time   = (0:n-1)*dT;
+
+yL  = { 'z (m)' 'v (m/s)' 'q_s' 'q_x' 'q_y' 'q_z' ...
+        '\omega_x (rad/s)' '\omega_y (rad/s)' '\omega_z (rad/s)' ...
+        '\omega_h (rad/s)' '\omega_i (rad/s)' '\theta_z' 'F (N)',...
+        'T_z (Nm)' 'T_H (Nm)' 'T_I (Nm)'};
+
+k = [1 2 13];
+PlotSet(time,xP(k,:),'x label', 'Time (sec)','y label',yL(k),...
+        'figure title','Dancer Translation');
+
+k = 13:16;
+PlotSet(time,xP(k,:),'x label', 'Time (sec)','y label',yL(k),...
+        'figure title','Forces and Torque');
+      
+k = [6 9 10 11 12];
+PlotSet(time,xP(k,:),'x label', 'Time (sec)','y label',yL(k),...
+        'figure title','Rotation');
+
+% Save the data
+cd TestData/
+save(dancer,'state','time');
+
+cd ..
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

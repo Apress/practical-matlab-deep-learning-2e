@@ -1,0 +1,223 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>CREATETERRAIN Finds 9 folders given a latitude and longitude</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="CreateTerrain.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>CREATETERRAIN Finds 9 folders given a latitude and longitude</h1><!--introduction--><p>The range is -60 to +60 in latitude. Draws a 3x3 tile map. You should call NewFigure first. You must be one directory above the terrain directory for this to work.</p><p>Type CreateTerrain for a demo.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Input</a></li><li><a href="#2">Output</a></li><li><a href="#3">CreateTerrain&gt;ScaleImage</a></li><li><a href="#4">CreateTerrain&gt;Demo</a></li><li><a href="#5">Copyright</a></li></ul></div><h2 id="1">Input</h2><pre class="language-matlab">lat (1,1) Latitude (deg)
+lon (1,1) Longitude (deg)
+</pre><h2 id="2">Output</h2><p>None</p><h2 id="3">CreateTerrain&gt;ScaleImage</h2><h2 id="4">CreateTerrain&gt;Demo</h2><h2 id="5">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% CREATETERRAIN Finds 9 folders given a latitude and longitude
+% The range is -60 to +60 in latitude. Draws a 3x3 tile map. You should call
+% NewFigure first. You must be one directory above the terrain directory for
+% this to work.
+%
+% Type CreateTerrain for a demo.
+%
+%% Input
+%   lat (1,1) Latitude (deg)
+%   lon (1,1) Longitude (deg)
+%
+%% Output
+% None
+
+function CreateTerrain( lat, lon, scale )
+
+% Demo
+if( nargin < 1 )
+  Demo;
+  return
+end
+
+d           = dir('terrain');
+latA        = zeros(1,468);
+lonA        = zeros(1,468);
+folderName  = cell(1,468);
+for k = 1:468
+  q               = d(k).name;
+  folderName{k}   = q;
+  if( q(2) == '0' )
+    latA(k) = str2double(q(1:2));
+    lonA(k) = str2double(q(3:end));
+  else
+    latA(k) = str2double(q(1:3));
+    lonA(k) = str2double(q(4:end));
+  end
+end
+
+% Center lower left corner is start
+latF	= floor(lat);
+lonF	= floor(lon);
+latI	= zeros(1,9);
+lonI	= zeros(1,9);
+lon0  = lonF - 10;
+latJK = latF - 10;
+lonJK = lon0;
+i     = 1;
+for j = 1:3
+  for k = 1:3
+    lonI(i) = lonJK;
+    latI(i) = latJK;
+    lonJK   = lonJK + 10;
+    i       = i + 1;
+  end
+  lonJK = lon0;
+  latJK = latJK + 10;
+end
+
+fldr = zeros(1,9);
+for k = 1:9
+  j       = find(latI(k)==latA);
+  i       = lonI(k)==lonA(j);
+  fldr(k) = j(i);
+end
+
+% Generate the file names
+imageSet  = cell(1,9);
+for k = 1:9
+  j = fldr(k);
+  if( latA(j) >= 0  )
+    if( lonA(j) >= 0 )
+      imageSet{k} = sprintf('grid10x10+%d+%d',latA(j)*100,lonA(j)*100);
+    else
+      imageSet{k} = sprintf('grid10x10+%d-%d',latA(j)*100,lonA(j)*100);
+    end
+  else
+    if( lonA(j) >= 0 )
+      imageSet{k} = sprintf('grid10x10-%d+%d',latA(j)*100,lonA(j)*100);
+    else
+      imageSet{k} = sprintf('grid10x10-%d-%d',latA(j)*100,lonA(j)*100);
+    end
+  end
+end
+
+% Assuming we are one directory above
+cd terrain
+
+im    = cell(1,9);
+for k = 1:9
+	j = fldr(k);
+  cd(folderName{j})
+	im{k} = ScaleImage(flipud(imread([imageSet{k},'.jpg'])),scale);
+  cd ..
+end
+
+del   = size(im{1},1);
+lX    = 3*del;
+
+% Draw the images
+x     = 0;
+y     = 0;
+for k = 1:9
+  image('xdata',[x;x+del],'ydata',[y;y+del],'cdata', im{k} );
+  hold on
+  x = x + del;
+  if ( x == lX )
+    x = 0;
+    y = y + del;
+  end
+end
+axis off
+axis image
+
+cd ..
+
+%% CreateTerrain>ScaleImage
+function s2 = ScaleImage( s1, q )
+
+n = 2^q;
+
+[mR,~,mD] = size(s1);
+
+m = mR/n;
+
+s2 = zeros(m,m,mD,'uint8');
+
+for i = 1:mD
+  for j = 1:m
+    r = (j-1)*n+1:j*n;
+    for k = 1:m
+      c         = (k-1)*n+1:k*n;
+      s2(j,k,i) = mean(mean(s1(r,c,i)));
+    end
+  end
+end
+
+%% CreateTerrain>Demo
+function Demo
+
+NewFigure('EarthSegment');
+CreateTerrain( 30,60,1 )
+
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+##### SOURCE END #####
+--></body></html>

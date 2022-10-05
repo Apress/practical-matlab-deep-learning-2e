@@ -1,0 +1,212 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tokamak Plasma Vertical Control Demo</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-05"><meta name="DC.source" content="ControlSim.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tokamak Plasma Vertical Control Demo</h1><!--introduction--><p>Simulates a model of the vertical position of an elongated plasma in a Tokamak. The vertical position is unstable and can be represented by one unstable mode and one stable mode and a time delay.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">References:</a></li><li><a href="#2">Constants</a></li><li><a href="#3">The control sampling period and the simulation integration time step</a></li><li><a href="#4">Number of sim steps</a></li><li><a href="#5">Plotting array</a></li><li><a href="#6">Initial conditions</a></li><li><a href="#7">Design the controller</a></li><li><a href="#8">Run the simulation</a></li><li><a href="#9">Plot the results</a></li><li><a href="#10">Copyright</a></li></ul></div><h2 id="1">References:</h2><p>1. Scibile, L. and B. Kouvaritakis (2001.) "A Discrete    Adaptive Near-Time Optimum Control for the Plasma Vertical    Position in a Tokamak." IEEE Transactions on Control System    Technology. Vol. 9, No. 1, January 2001.</p><p>2. Scibile, L., "Non-linear Control of the Plasma Vertical    Position in a Tokamak," Ph.D Thesis, University of Oxford, 1997.  ------------------------------------------------------------------------</p><h2 id="2">Constants</h2><pre class="codeinput">d           = RHSTokamak;
+tau1ELM     = 6.0e-4;   <span class="comment">% ELM time constant 1</span>
+tau2ELM     = 1.7e-4;   <span class="comment">% ELM time constant 2</span>
+kELM        = 1.5e-6;   <span class="comment">% ELM gain matches Figure 2.9 in Reference 2</span>
+tRepELM     = 48e-3;   	<span class="comment">% ELM repetition time (s)</span>
+controlOn   = true;
+vCMax       = 3e-4;
+</pre><pre class="codeoutput">Eigenvalues
+
+ Mode 1        -2.67
+ Mode 2       115.16
+</pre><h2 id="3">The control sampling period and the simulation integration time step</h2><pre class="codeinput">dT          = 1e-5;
+</pre><h2 id="4">Number of sim steps</h2><pre class="codeinput">nSim        = 20000;
+</pre><h2 id="5">Plotting array</h2><pre class="codeinput">xPlot       = zeros(8,nSim);
+</pre><h2 id="6">Initial conditions</h2><pre class="codeinput">x           = [0;0;0];
+t           = 0;
+tRep        = 0.001; <span class="comment">% Time for the 1st ELM</span>
+tELM        = inf; <span class="comment">% This value will be change after the first ELM</span>
+zOld        = 0; <span class="comment">% For the rate equation</span>
+z           = 0;
+</pre><h2 id="7">Design the controller</h2><pre class="codeinput">kControl    = QCR( d.aS, d.bS(:,1), eye(2), 1 );
+</pre><h2 id="8">Run the simulation</h2><pre class="codeinput"><span class="keyword">for</span> k = 1:nSim
+  <span class="keyword">if</span>( controlOn )
+    d.vC = -kControl*x(1:2);
+    <span class="keyword">if</span>( abs(d.vC) &gt; vCMax )
+      d.vC = sign(d.vC)*vCMax;
+    <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    d.vC	= 0; <span class="comment">%#ok&lt;UNRCH&gt;</span>
+  <span class="keyword">end</span>
+
+  d.eLM	= ELM( tau1ELM, tau2ELM, kELM, tELM );
+  tELM 	= tELM + dT;
+
+  <span class="comment">% Trigger another ELM</span>
+  <span class="keyword">if</span>( t &gt; tRep + rand*tRepELM )
+	 tELM	= 0;
+	 tRep	= t;
+  <span class="keyword">end</span>
+
+  x           = RungeKutta( @RHSTokamak, x, t, dT,  d );
+  [~,z]       = RHSTokamak( x, t, d ); <span class="comment">% Get the position</span>
+  t           = t + dT;
+  zDot        = (z - zOld)/dT; <span class="comment">% The rate of the vertical position</span>
+  xPlot(:,k)  = [x;z;zDot;d.eLM;d.vC];
+<span class="keyword">end</span>
+</pre><h2 id="9">Plot the results</h2><pre class="codeinput">tPlot = dT*(0:nSim-1)*1000;
+yL    = {<span class="string">'I_A'</span> <span class="string">'I_V'</span>  <span class="string">'v'</span> <span class="string">'z (m)'</span> <span class="string">'zDot (m/s)'</span> <span class="string">'ELM'</span> <span class="string">'ELMDot'</span> <span class="string">'V_C'</span>};
+k     = [1 2 4 5];
+PlotSet( tPlot, xPlot(k,:), <span class="string">'x label'</span>, <span class="string">'Time (ms)'</span>, <span class="string">'y label'</span>, yL(k), <span class="string">'figure title'</span>, <span class="string">'Disruption Simulation'</span> );
+k     = [5, 6];
+PlotSet( tPlot, xPlot(k,:), <span class="string">'x label'</span>, <span class="string">'Time (ms)'</span>, <span class="string">'y label'</span>, yL(k), <span class="string">'figure title'</span>, <span class="string">'ZDot and ELM'</span> );
+k     = [4, 8];
+PlotSet( tPlot, xPlot(k,:), <span class="string">'x label'</span>, <span class="string">'Time (ms)'</span>, <span class="string">'y label'</span>, yL(k), <span class="string">'figure title'</span>, <span class="string">'Control'</span> );
+</pre><img vspace="5" hspace="5" src="ControlSim_01.png" alt=""> <img vspace="5" hspace="5" src="ControlSim_02.png" alt=""> <img vspace="5" hspace="5" src="ControlSim_03.png" alt=""> <h2 id="10">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tokamak Plasma Vertical Control Demo
+% Simulates a model of the vertical position of an elongated plasma in a 
+% Tokamak. The vertical position is unstable and can be represented by one
+% unstable mode and one stable mode and a time delay. 
+%% References: 
+% 1. Scibile, L. and B. Kouvaritakis (2001.) "A Discrete 
+%    Adaptive Near-Time Optimum Control for the Plasma Vertical 
+%    Position in a Tokamak." IEEE Transactions on Control System
+%    Technology. Vol. 9, No. 1, January 2001.
+%
+% 2. Scibile, L., "Non-linear Control of the Plasma Vertical
+%    Position in a Tokamak," Ph.D Thesis, University of Oxford, 1997.
+%  REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+%% Constants
+d           = RHSTokamak;                                      
+tau1ELM     = 6.0e-4;   % ELM time constant 1
+tau2ELM     = 1.7e-4;   % ELM time constant 2
+kELM        = 1.5e-6;   % ELM gain matches Figure 2.9 in Reference 2
+tRepELM     = 48e-3;   	% ELM repetition time (s)
+controlOn   = true;
+vCMax       = 3e-4;
+
+%% The control sampling period and the simulation integration time step
+dT          = 1e-5;
+
+%% Number of sim steps
+nSim        = 20000;
+
+%% Plotting array
+xPlot       = zeros(8,nSim);
+
+%% Initial conditions
+x           = [0;0;0];
+t           = 0;
+tRep        = 0.001; % Time for the 1st ELM
+tELM        = inf; % This value will be change after the first ELM
+zOld        = 0; % For the rate equation
+z           = 0;
+
+%% Design the controller
+kControl    = QCR( d.aS, d.bS(:,1), eye(2), 1 );
+
+%% Run the simulation
+for k = 1:nSim 
+  if( controlOn )
+    d.vC = -kControl*x(1:2);
+    if( abs(d.vC) > vCMax )
+      d.vC = sign(d.vC)*vCMax;
+    end
+  else
+    d.vC	= 0; %#ok<UNRCH>
+  end
+  
+  d.eLM	= ELM( tau1ELM, tau2ELM, kELM, tELM );
+  tELM 	= tELM + dT;
+  
+  % Trigger another ELM
+  if( t > tRep + rand*tRepELM )
+	 tELM	= 0;
+	 tRep	= t;
+  end
+  
+  x           = RungeKutta( @RHSTokamak, x, t, dT,  d );
+  [~,z]       = RHSTokamak( x, t, d ); % Get the position
+  t           = t + dT; 
+  zDot        = (z - zOld)/dT; % The rate of the vertical position
+  xPlot(:,k)  = [x;z;zDot;d.eLM;d.vC];   
+end
+
+%% Plot the results
+tPlot = dT*(0:nSim-1)*1000;
+yL    = {'I_A' 'I_V'  'v' 'z (m)' 'zDot (m/s)' 'ELM' 'ELMDot' 'V_C'};
+k     = [1 2 4 5];
+PlotSet( tPlot, xPlot(k,:), 'x label', 'Time (ms)', 'y label', yL(k), 'figure title', 'Disruption Simulation' );
+k     = [5, 6];
+PlotSet( tPlot, xPlot(k,:), 'x label', 'Time (ms)', 'y label', yL(k), 'figure title', 'ZDot and ELM' );
+k     = [4, 8];
+PlotSet( tPlot, xPlot(k,:), 'x label', 'Time (ms)', 'y label', yL(k), 'figure title', 'Control' );
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

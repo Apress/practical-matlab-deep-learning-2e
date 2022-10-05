@@ -1,0 +1,237 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>AircraftNNSim</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="AircraftNNSim.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Simulate a Gulfstream 350 in a banked turn</a></li><li><a href="#2">Load the neural net</a></li><li><a href="#3">Start by finding the equilibrium controls</a></li><li><a href="#4">Simulation</a></li><li><a href="#5">Plot the results</a></li><li><a href="#6">Copyright</a></li></ul></div><h2 id="1">Simulate a Gulfstream 350 in a banked turn</h2><pre class="codeinput">n       = 500;
+dT      = 0.1;
+rTD     = 180/pi;
+mToKm   =	0.001;
+r       = 600;
+nBits   = 16;
+</pre><h2 id="2">Load the neural net</h2><pre class="codeinput">nN    = load(<span class="string">'TerrainNet'</span>);
+rI    = load(<span class="string">'Loc'</span>);
+</pre><h2 id="3">Start by finding the equilibrium controls</h2><pre class="codeinput">d     = RHSPointMassAircraft;
+v     = 120;
+d.phi = atan(v^2/(r*d.g));
+x     = [v;0;0;-r;0;10000];
+d     = EquilibriumControls( x, d );
+</pre><h2 id="4">Simulation</h2><pre class="codeinput">xPlot = zeros(length(x)+3,n);
+
+<span class="comment">% Put the image in a figure so that we can read it</span>
+h = NewFigure(<span class="string">'Earth Segment'</span>);
+i = flipud(imread(<span class="string">'TerrainClose64.jpg'</span>));
+image(i);
+axis <span class="string">image</span>
+
+NewFigure(<span class="string">'Camera'</span>);
+
+<span class="keyword">for</span> k = 1:n
+
+  <span class="comment">% Get the image for the neural net</span>
+  im          = TerrainCamera( x(4:5), h, nBits );
+  subplot(1,2,1)
+  image(im.p)
+  axis <span class="string">image</span>
+
+  <span class="comment">% Run the neural net</span>
+  l           = classify(nN.terrainNet,im.p);
+  subplot(1,2,2)
+  q = imread(sprintf(<span class="string">'TerrainImages/TerrainImage%d.jpg'</span>,rI.iMI(l)));
+  image(q);
+  axis <span class="string">image</span>
+
+  <span class="comment">% Plot storage</span>
+  i           = int32(l);
+  xPlot(:,k)  = [x;rI.r(:,i);i];
+
+  <span class="comment">% Integrate</span>
+  x           = RungeKutta( @RHSPointMassAircraft, 0, x, dT, d );
+
+  <span class="comment">% A crash</span>
+  <span class="keyword">if</span>( x(6) &lt;= 0 )
+    <span class="keyword">break</span>;
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Undefined function 'getimage' for input arguments of type 'matlab.ui.Figure'.
+
+Error in TerrainCamera (line 54)
+[~,~,i] = getimage(h);
+
+Error in AircraftNNSim (line 35)
+  im          = TerrainCamera( x(4:5), h, nBits );
+</pre><h2 id="5">Plot the results</h2><pre class="codeinput">xPlot         = xPlot(:,1:k);
+xPlot(2,:)    = xPlot(2,:)*rTD;
+xPlot(4:6,:)  = xPlot(4:6,:);
+yL            = {<span class="string">'v (m/s)'</span> <span class="string">'\gamma (deg)'</span> <span class="string">'\psi (deg)'</span> <span class="string">'x (m)'</span>  <span class="string">'y (m)'</span><span class="keyword">...</span>
+                 <span class="string">'h (m)'</span> <span class="string">'x_c (m)'</span>, <span class="string">'y_c (m)'</span> };
+[t,tL]        = TimeLabel(dT*(0:(k-1)));
+
+PlotSet( t, xPlot(1:6,:), <span class="string">'x label'</span>, tL, <span class="string">'y label'</span>, yL(1:6),<span class="keyword">...</span>
+  <span class="string">'figure title'</span>, <span class="string">'Aircraft State'</span> );
+
+k = [4 5 7 8];
+PlotSet( t, xPlot(k,:), <span class="string">'x label'</span>, tL, <span class="string">'y label'</span>, yL(k),<span class="keyword">...</span>
+  <span class="string">'figure title'</span>, <span class="string">'Aircraft Position'</span> );
+
+PlotSet( t, xPlot(9,:), <span class="string">'x label'</span>, tL, <span class="string">'y label'</span>, <span class="string">'Image'</span>,<span class="keyword">...</span>
+  <span class="string">'figure title'</span>, <span class="string">'Image Identified'</span> );
+
+i = imread(<span class="string">'TerrainClose64.jpg'</span>);
+PlotXYTrajectory( [xPlot(4,:);xPlot(7,:)], [xPlot(5,:);xPlot(8,:)],<span class="keyword">...</span>
+  i, 2000, <span class="string">'Trajectory'</span> );
+</pre><h2 id="6">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Simulate a Gulfstream 350 in a banked turn
+
+n       = 500;
+dT      = 0.1;
+rTD     = 180/pi;
+mToKm   =	0.001;
+r       = 600;
+nBits   = 16;
+
+%% Load the neural net
+nN    = load('TerrainNet');
+rI    = load('Loc');
+
+%% Start by finding the equilibrium controls
+d     = RHSPointMassAircraft;
+v     = 120;
+d.phi = atan(v^2/(r*d.g));
+x     = [v;0;0;-r;0;10000];
+d     = EquilibriumControls( x, d );
+
+%% Simulation
+xPlot = zeros(length(x)+3,n);
+
+% Put the image in a figure so that we can read it
+h = NewFigure('Earth Segment');
+i = flipud(imread('TerrainClose64.jpg'));
+image(i);
+axis image
+
+NewFigure('Camera');
+
+for k = 1:n
+
+  % Get the image for the neural net
+  im          = TerrainCamera( x(4:5), h, nBits );
+  subplot(1,2,1)
+  image(im.p)
+  axis image
+  
+  % Run the neural net
+  l           = classify(nN.terrainNet,im.p);
+  subplot(1,2,2)
+  q = imread(sprintf('TerrainImages/TerrainImage%d.jpg',rI.iMI(l)));
+  image(q);
+  axis image
+  
+  % Plot storage
+  i           = int32(l);
+  xPlot(:,k)  = [x;rI.r(:,i);i];
+  
+  % Integrate
+  x           = RungeKutta( @RHSPointMassAircraft, 0, x, dT, d );
+  
+  % A crash
+  if( x(6) <= 0 )
+    break;
+  end
+end
+
+%% Plot the results
+xPlot         = xPlot(:,1:k);
+xPlot(2,:)    = xPlot(2,:)*rTD;
+xPlot(4:6,:)  = xPlot(4:6,:);
+yL            = {'v (m/s)' '\gamma (deg)' '\psi (deg)' 'x (m)'  'y (m)'...
+                 'h (m)' 'x_c (m)', 'y_c (m)' };
+[t,tL]        = TimeLabel(dT*(0:(k-1)));
+
+PlotSet( t, xPlot(1:6,:), 'x label', tL, 'y label', yL(1:6),...
+  'figure title', 'Aircraft State' );
+
+k = [4 5 7 8];
+PlotSet( t, xPlot(k,:), 'x label', tL, 'y label', yL(k),...
+  'figure title', 'Aircraft Position' );
+
+PlotSet( t, xPlot(9,:), 'x label', tL, 'y label', 'Image',...
+  'figure title', 'Image Identified' );
+
+i = imread('TerrainClose64.jpg');
+PlotXYTrajectory( [xPlot(4,:);xPlot(7,:)], [xPlot(5,:);xPlot(8,:)],...
+  i, 2000, 'Trajectory' );
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

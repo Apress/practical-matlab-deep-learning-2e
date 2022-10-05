@@ -1,0 +1,319 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Script using LSTM to predict stock prices</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="StockMarketNeuralNet.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Script using LSTM to predict stock prices</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also:</a></li><li><a href="#2">Generate the stock market example</a></li><li><a href="#3">Divide into training and testing data</a></li><li><a href="#4">Set up and train the neural net</a></li><li><a href="#5">Demonstrate the neural net</a></li><li><a href="#6">Plot the prediction</a></li><li><a href="#7">Copyright</a></li></ul></div><h2 id="1">See also:</h2><p>lstmLayer, sequenceInputLayer, fullyConnectedLayer, regressionLayer, trainingOptions, trainNetwork, predictAndUpdateState</p><pre class="codeinput"><span class="comment">% Rest the random number generator so we always get the same case</span>
+rng(<span class="string">'default'</span>)
+
+layerSet = <span class="string">'two lstm'</span>; <span class="comment">% 'lstm' 'bilstm' and 'two lstm' are available</span>
+</pre><h2 id="2">Generate the stock market example</h2><pre class="codeinput">n     = 1448;
+tEnd  = 5.75;
+d     = StockMarket( 1, 8000, 3000, tEnd, n );
+s     = StockPrice( d.s0, d.r, d.sigma, tEnd, n );
+t     = linspace(0,tEnd,n+1);
+
+PlotStock(t,s,d.symb);
+</pre><img vspace="5" hspace="5" src="StockMarketNeuralNet_01.png" alt=""> <h2 id="3">Divide into training and testing data</h2><pre class="codeinput">n           = length(s);
+nTrain      = floor(0.8*n);
+sTrain      = s(1:nTrain);
+sTest       = s(nTrain+1:n);
+sVal        = sTest;
+
+<span class="comment">% Normalize the training data</span>
+mu          = mean(sTrain);
+sigma       = std(sTrain);
+
+sTrainNorm  = (sTrain-mu)/sigma; <span class="comment">% normalize the data to zero mean</span>
+
+<span class="comment">% Normalize the test data</span>
+sTestNorm   = (sTest - mu) / sigma;
+sTest       = sTestNorm(1:end-1);
+</pre><h2 id="4">Set up and train the neural net</h2><pre class="codeinput"><span class="comment">% We are training the LSTM using the previous step</span>
+xTrain    = sTrainNorm(1:end-1);
+yTrain    = sTrainNorm(2:end);
+
+<span class="comment">% Validation data</span>
+muVal     = mean(sVal); <span class="comment">% Must normalize over just this data</span>
+sigmaVal  = std(sVal);
+sValNorm  = (sVal-muVal)/sigmaVal;
+
+xVal = sValNorm(1:end-1);
+yVal = sValNorm(2:end);
+
+numFeatures    = 1;
+numResponses   = 1;
+numHiddenUnits = 200;
+
+<span class="keyword">switch</span> layerSet
+  <span class="keyword">case</span> <span class="string">'lstm'</span>
+    layers = [sequenceInputLayer(numFeatures)
+              lstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  <span class="keyword">case</span> <span class="string">'bilstm'</span>
+    layers = [sequenceInputLayer(numFeatures)
+              bilstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  <span class="keyword">case</span> <span class="string">'two lstm'</span>
+    layers = [sequenceInputLayer(numFeatures)
+              lstmLayer(numHiddenUnits)
+              reluLayer
+              lstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  <span class="keyword">otherwise</span>
+    error(<span class="string">'Only 3 sets of layers are available'</span>);
+<span class="keyword">end</span>
+
+analyzeNetwork(layers);
+
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,300, <span class="keyword">...</span>
+    <span class="string">'ExecutionEnvironment'</span>,<span class="string">'auto'</span>,<span class="keyword">...</span>
+    <span class="string">'GradientThreshold'</span>,1, <span class="keyword">...</span>
+    <span class="string">'InitialLearnRate'</span>,0.005, <span class="keyword">...</span>
+    <span class="string">'LearnRateSchedule'</span>,<span class="string">'piecewise'</span>, <span class="keyword">...</span>
+    <span class="string">'LearnRateDropPeriod'</span>,125, <span class="keyword">...</span>
+    <span class="string">'LearnRateDropFactor'</span>,0.2, <span class="keyword">...</span>
+    <span class="string">'Shuffle'</span>,<span class="string">'every-epoch'</span>, <span class="keyword">...</span>
+    <span class="string">'ValidationData'</span>,{xVal,yVal}, <span class="keyword">...</span>
+    <span class="string">'ValidationFrequency'</span>,5, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+
+net = trainNetwork(xTrain,yTrain,layers,options);
+</pre><img vspace="5" hspace="5" src="StockMarketNeuralNet_02.png" alt=""> <h2 id="5">Demonstrate the neural net</h2><pre class="codeinput">yPred    = predict(net,sTest);
+yPred(1) = yTrain(end-1);
+yPred(2) = yTrain(end);
+yPred    = sigma*yPred + mu;
+</pre><h2 id="6">Plot the prediction</h2><pre class="codeinput">NewFigure(<span class="string">'Stock prediction'</span>)
+plot(t(1:nTrain-1),sTrain(1:end-1));
+hold <span class="string">on</span>
+plot(t,s,<span class="string">'--g'</span>);
+grid <span class="string">on</span>
+hold <span class="string">on</span>
+k = nTrain+1:n;
+plot(t(k),[s(nTrain) yPred],<span class="string">'-'</span>)
+xlabel(<span class="string">"Year"</span>)
+ylabel(<span class="string">"Stock Price"</span>)
+title(<span class="string">"Forecast"</span>)
+legend([<span class="string">"Observed"</span> <span class="string">"True"</span> <span class="string">"Forecast"</span>])
+
+<span class="comment">% Format the ticks</span>
+yT  = get(gca,<span class="string">'YTick'</span>);
+yTL = cell(1,length(yT));
+<span class="keyword">for</span> k = 1:length(yT)
+  yTL{k} = sprintf(<span class="string">'%5.0f'</span>,yT(k));
+<span class="keyword">end</span>
+set(gca,<span class="string">'YTickLabel'</span>, yTL)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (9: Stock prediction) with properties:
+
+      Number: 9
+        Name: 'Stock prediction'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="StockMarketNeuralNet_03.png" alt=""> <h2 id="7">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script using LSTM to predict stock prices
+%% See also:
+% lstmLayer, sequenceInputLayer, fullyConnectedLayer, regressionLayer,
+% trainingOptions, trainNetwork, predictAndUpdateState
+
+% Rest the random number generator so we always get the same case
+rng('default')
+
+layerSet = 'two lstm'; % 'lstm' 'bilstm' and 'two lstm' are available
+
+%% Generate the stock market example
+n     = 1448;
+tEnd  = 5.75;
+d     = StockMarket( 1, 8000, 3000, tEnd, n );
+s     = StockPrice( d.s0, d.r, d.sigma, tEnd, n );
+t     = linspace(0,tEnd,n+1);
+
+PlotStock(t,s,d.symb);
+
+%% Divide into training and testing data
+n           = length(s);
+nTrain      = floor(0.8*n);
+sTrain      = s(1:nTrain);
+sTest       = s(nTrain+1:n);
+sVal        = sTest;
+
+% Normalize the training data
+mu          = mean(sTrain);
+sigma       = std(sTrain);
+
+sTrainNorm  = (sTrain-mu)/sigma; % normalize the data to zero mean
+
+% Normalize the test data
+sTestNorm   = (sTest - mu) / sigma;
+sTest       = sTestNorm(1:end-1);
+
+%% Set up and train the neural net
+
+% We are training the LSTM using the previous step
+xTrain    = sTrainNorm(1:end-1);
+yTrain    = sTrainNorm(2:end);
+
+% Validation data
+muVal     = mean(sVal); % Must normalize over just this data
+sigmaVal  = std(sVal);
+sValNorm  = (sVal-muVal)/sigmaVal;
+
+xVal = sValNorm(1:end-1);
+yVal = sValNorm(2:end);
+
+numFeatures    = 1;
+numResponses   = 1;
+numHiddenUnits = 200;
+
+switch layerSet
+  case 'lstm'
+    layers = [sequenceInputLayer(numFeatures)
+              lstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  case 'bilstm'
+    layers = [sequenceInputLayer(numFeatures)
+              bilstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  case 'two lstm'
+    layers = [sequenceInputLayer(numFeatures)
+              lstmLayer(numHiddenUnits)
+              reluLayer
+              lstmLayer(numHiddenUnits)
+              fullyConnectedLayer(numResponses)
+              regressionLayer];
+  otherwise
+    error('Only 3 sets of layers are available');
+end
+        
+analyzeNetwork(layers);
+
+options = trainingOptions('adam', ...
+    'MaxEpochs',300, ...
+    'ExecutionEnvironment','auto',...
+    'GradientThreshold',1, ...
+    'InitialLearnRate',0.005, ...
+    'LearnRateSchedule','piecewise', ...
+    'LearnRateDropPeriod',125, ...
+    'LearnRateDropFactor',0.2, ...
+    'Shuffle','every-epoch', ...
+    'ValidationData',{xVal,yVal}, ...
+    'ValidationFrequency',5, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+  
+net = trainNetwork(xTrain,yTrain,layers,options);
+
+%% Demonstrate the neural net
+yPred    = predict(net,sTest);
+yPred(1) = yTrain(end-1);
+yPred(2) = yTrain(end);
+yPred    = sigma*yPred + mu;
+
+%% Plot the prediction
+NewFigure('Stock prediction')
+plot(t(1:nTrain-1),sTrain(1:end-1));
+hold on
+plot(t,s,'REPLACE_WITH_DASH_DASHg');
+grid on
+hold on
+k = nTrain+1:n;
+plot(t(k),[s(nTrain) yPred],'-')
+xlabel("Year")
+ylabel("Stock Price")
+title("Forecast")
+legend(["Observed" "True" "Forecast"])
+
+% Format the ticks
+yT  = get(gca,'YTick');
+yTL = cell(1,length(yT));
+for k = 1:length(yT)
+  yTL{k} = sprintf('%5.0f',yT(k));
+end
+set(gca,'YTickLabel', yTL)
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

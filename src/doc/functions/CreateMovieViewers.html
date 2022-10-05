@@ -1,0 +1,172 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>CREATEMOVIEVIEWERS Create a movie viewer database</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="CreateMovieViewers.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>CREATEMOVIEVIEWERS Create a movie viewer database</h1><!--introduction--><p>Creates a set of movie watchers.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Form:</a></li><li><a href="#2">Inputs</a></li><li><a href="#3">Output</a></li><li><a href="#4">See also</a></li><li><a href="#5">CreateMovieViewers&gt;Gaussian</a></li><li><a href="#7">CreateMovieViewers&gt;Demo</a></li><li><a href="#9">Copyright</a></li></ul></div><h2 id="1">Form:</h2><pre class="language-matlab">mvr = CreateMovieViewers( nViewers, d )
+</pre><h2 id="2">Inputs</h2><pre>nViewers  (1,1) Number of viewers
+d          (.)  Movie database</pre><h2 id="3">Output</h2><pre>mvr        {n}   A cell array with a list of movies each viewer has watched.</pre><h2 id="4">See also</h2><p>CreateMovieDatabase, CreateMovieViewers&gt;Gaussian, CreateMovieViewers&gt;Demo</p><h2 id="5">CreateMovieViewers&gt;Gaussian</h2><p>The probability is 1 when x==mu and declines for shorter or longer movies</p><pre class="codeoutput">
+mvr =
+
+  1&times;4 cell array
+
+  Columns 1 through 3
+
+    {[90 20 19 39 27 &#8230; ]}    {[3 57 49 12 4 9 &#8230; ]}    {[33 45 24 20 97 &#8230; ]}
+
+  Column 4
+
+    {[48 23 63 49 33 &#8230; ]}
+
+</pre><h2 id="7">CreateMovieViewers&gt;Demo</h2><p>Load the Movies.mat database and create 4 viewers.</p><h2 id="9">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% CREATEMOVIEVIEWERS Create a movie viewer database
+% Creates a set of movie watchers.
+%% Form:
+%   mvr = CreateMovieViewers( nViewers, d )
+%
+%% Inputs
+%  nViewers  (1,1) Number of viewers
+%  d          (.)  Movie database
+%
+%% Output
+%  mvr        {n}   A cell array with a list of movies each viewer has watched.
+%
+%% See also
+% CreateMovieDatabase, CreateMovieViewers>Gaussian, CreateMovieViewers>Demo
+
+function [mvr,pWatched] = CreateMovieViewers( nViewers, d )
+
+if( nargin < 1 )
+  Demo
+  return
+end
+
+mvr   = cell(1,nViewers);
+nMov  = length(d.name);
+genre = { 'Animated', 'Comedy', 'Dance', 'Drama', 'Fantasy', 'Romance',...
+          'SciFi', 'War', 'Horror', 'Music', 'Crime'};
+mPAA  = {'PG-13','R','PG'};
+
+% Loop through viewers. The inner loop is movies.
+for j = 1:nViewers
+  % Probability of watching each MPAA
+  rMPAA = rand(1,length(mPAA));
+  rMPAA = rMPAA/sum(rMPAA);
+  
+  % Probability of watching each Rating (1 to 5 stars)
+  r = rand(1,5);
+  r = r/sum(r);
+  
+  % Probability of watching a given Length
+  mu    = 1.5 + 0.5*rand; % preferred movie length, between 1.5 and 2 hrs
+  sigma = 0.5*rand;       % variance, up to 1/2 hour
+  
+  % Probability of watching by Genre
+  rGenre = rand(1,length(genre));
+  rGenre = rGenre/sum(rGenre);
+  
+  % Compute the likelihood the viewer watched each movie
+  pWatched = zeros(1,nMov);
+  for k = 1:nMov
+    pRating   = r(d.rating(k));           % probability for this rating
+    i         = strcmp(d.mPAA{k},mPAA);   % logical array with one match
+    pMPAA     = rMPAA(i);                 % probability for this MPAA
+    i         = strcmp(d.genre{k},genre); % logical array
+    pGenre   	= rGenre(i);                % probability for this genre
+    pLength   = Gaussian(d.length(k),sigma,mu);  % probability for this length
+    pWatched(k) = 1 - (1-pRating)*(1-pMPAA)*(1-pGenre)*(1-pLength);
+  end
+  
+  % Sort the movies and pick the most likely to have been watched
+  nInterval = floor( [0.2 0.6]*nMov );
+  nMovies = randi(nInterval);
+  [~,i]   = sort(pWatched);  
+  mvr{j}  = i(1:nMovies);
+end
+
+function p = Gaussian(x,sigma,mu)
+%% CreateMovieViewers>Gaussian
+% The probability is 1 when x==mu and declines for shorter or longer movies
+
+p = exp(-(x-mu)^2/(2*sigma^2));
+
+function Demo
+%% CreateMovieViewers>Demo
+% Load the Movies.mat database and create 4 viewers.
+
+s = load('Movies.mat');
+
+mvr = CreateMovieViewers( 4, s.d )
+ 
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

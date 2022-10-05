@@ -1,0 +1,636 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>DANCERGUI Interactive tool for dancer data acquisition from an IMU.</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="DancerGUI.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>DANCERGUI Interactive tool for dancer data acquisition from an IMU.</h1><!--introduction--><p>This GUI is designed to gather data from an IMU worn by a dancer. The input file must be of type .obj. Requires the Instrument Control Toolbox to talk to the IMU using bluetooth.</p><p>Type DancerGUI for a demo.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Form:</a></li><li><a href="#2">Inputs</a></li><li><a href="#3">Outputs</a></li><li><a href="#4">See also</a></li><li><a href="#5">Copyright</a></li></ul></div><h2 id="1">Form:</h2><pre class="language-matlab">DancerGUI;        <span class="comment">% demo of Ballerina.obj</span>
+DancerGUI( file )
+</pre><h2 id="2">Inputs</h2><pre class="language-matlab">file  (1,:) File <span class="string">name</span> <span class="string">-</span> <span class="string">needs</span> <span class="string">to</span> <span class="string">be</span> <span class="string">a</span> <span class="string">complete</span> <span class="string">path</span> <span class="string">name</span>
+</pre><h2 id="3">Outputs</h2><pre class="language-matlab">Saves <span class="string">to</span> <span class="string">a</span> <span class="string">MAT</span> <span class="string">file</span>
+</pre><h2 id="4">See also</h2><p>DataFromIMU, Bluetooth,</p><pre class="codeinput"><span class="keyword">function</span> DancerGUI( file )
+
+<span class="comment">% Demo</span>
+<span class="keyword">if</span>( nargin &lt; 1 )
+  DancerGUI(<span class="string">'Ballerina.obj'</span>);
+  <span class="keyword">return</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Storage of data need by the deep learning system</span>
+kStore      = 1;
+accelStore  = zeros(3,1000);
+gyroStore   = zeros(3,1000);
+quatStore   = zeros(4,1000);
+timeStore   = zeros(1,1000);
+time        = 0;
+on3D        = false;
+quitNow     = false;
+
+sZ = get(0,<span class="string">'ScreenSize'</span>) + [99 99 -200 -200];
+
+h.fig = figure(<span class="string">'name'</span>,<span class="string">'Dancer Data Acquisition'</span>,<span class="string">'position'</span>,sZ,<span class="keyword">...</span>
+  <span class="string">'units'</span>,<span class="string">'pixels'</span>,<span class="string">'NumberTitle'</span>,<span class="string">'off'</span>,<span class="string">'tag'</span>,<span class="string">'DancerGUI'</span>,<span class="keyword">...</span>
+  <span class="string">'color'</span>,[0.9 0.9 0.9]);
+
+<span class="comment">% Plot display</span>
+gPlot.yLabel = {<span class="string">'\omega_x'</span> <span class="string">'\omega_y'</span> <span class="string">'\omega_z'</span> <span class="string">'a_x'</span> <span class="string">'a_y'</span> <span class="string">'a_z'</span>};
+gPlot.tLabel = <span class="string">'Time (sec)'</span>;
+gPlot.tLim   = [0 100];
+gPlot.pos    = [0.45    0.88    0.46    0.1];
+gPlot.color  = <span class="string">'b'</span>;
+gPlot.width  = 1;
+
+<span class="comment">% Calibration</span>
+q0         = [1;0;0;0];
+a0         = [0;0;0];
+
+dIMU.accel = a0;
+dIMU.quat  = q0;
+
+<span class="comment">% Initialize the GUI</span>
+DrawGUI;
+
+<span class="comment">% Get bluetooth information</span>
+<span class="keyword">if</span> exist(<span class="string">'instrreset'</span>)
+  instrreset; <span class="comment">% Just in case the IMU wasn't close properly. removed in future release</span>
+  btInfo  = instrhwinfo(<span class="string">'Bluetooth'</span>);
+<span class="keyword">else</span>
+  btInfo.RemoteIDs = [];
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>( ~isempty(btInfo.RemoteIDs) )
+  <span class="comment">% Display the information about the first device discovered</span>
+  btInfo.RemoteNames(1)
+  btInfo.RemoteIDs(1)
+  <span class="keyword">for</span> iB = length(btInfo.RemoteIDs)
+    <span class="keyword">if</span>( strcmp(btInfo.RemoteNames(iB),<span class="string">'LPMSB2-4B31D6'</span>) )
+      <span class="keyword">break</span>;
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+  b = Bluetooth(btInfo.RemoteIDs{iB}, 1);
+  fopen(b); <span class="comment">% No output allowed for some reason</span>
+  noIMU = false;
+  a     = fread(b,91);
+  dIMU  = DataFromIMU( a );
+<span class="keyword">else</span>
+  warndlg(<span class="string">'The IMU is not available.'</span>, <span class="string">'Hardware Configuration'</span>)
+  noIMU   = true;
+<span class="keyword">end</span>
+
+<span class="comment">% Wait for user input</span>
+uiwait;
+<span class="comment">% The run loop</span>
+time = 0;
+tic
+<span class="keyword">while</span>(1)
+  <span class="keyword">if</span>( noIMU )
+    omegaZ = 2*pi;
+    dT     = toc;
+    time   = time + dT;
+    tic
+    a      = omegaZ*time;
+    q      = [cos(a);0;0;sin(a)];
+    accel  = [0;0;sin(a)];
+    omega  = [0;0;omegaZ];
+  <span class="keyword">else</span>
+    <span class="comment">% Query the bluetooth device</span>
+    a = fread(b,91);
+    pause(0.1); <span class="comment">% needed so not to overload the bluetooth device</span>
+
+    dT   = toc;
+    time = time + dT;
+    tic
+
+    <span class="comment">% Get a data structure</span>
+    <span class="keyword">if</span>( length(a) &gt; 1 )
+      dIMU = DataFromIMU( a );
+    <span class="keyword">end</span>
+    accel  = dIMU.accel - a0;
+    omega  = dIMU.gyro;
+    q      = QuaternionMultiplication(q0,dIMU.quat);
+
+    timeStore(1,kStore)  = time;
+    accelStore(:,kStore) = accel;
+    gyroStore(:,kStore)  = omega;
+    quatStore(:,kStore)  = q;
+    kStore = kStore + 1;
+  <span class="keyword">end</span>
+
+  <span class="keyword">if</span>( quitNow )
+    close( h.fig )
+    <span class="keyword">return</span>
+  <span class="keyword">else</span>
+    <span class="keyword">if</span>( on3D )
+      QuaternionVisualization( <span class="string">'update'</span>, q );
+    <span class="keyword">end</span>
+    set(h.text(1),<span class="string">'string'</span>,sprintf(<span class="string">'[%5.2f;%5.2f;%5.2f] m/s^2'</span>,accel));
+    set(h.text(2),<span class="string">'string'</span>,sprintf(<span class="string">'[%5.2f;%5.2f;%5.2f] rad/s'</span>,omega));
+    set(h.text(3),<span class="string">'string'</span>,datestr(now));
+    gPlot = GUIPlots( <span class="string">'update'</span>, [omega;accel], time, gPlot );
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+  <span class="keyword">function</span> DrawGUI
+  <span class="comment">% Create the GUI</span>
+
+  <span class="comment">% Plots</span>
+  gPlot = GUIPlots( <span class="string">'initialize'</span>, [], [], gPlot );
+
+  <span class="comment">% Quaternion display</span>
+  subplot(<span class="string">'position'</span>,[0.05 0.5 0.4 0.4],<span class="string">'DataAspectRatio'</span>,[1 1 1],<span class="keyword">...</span>
+          <span class="string">'PlotBoxAspectRatio'</span>,[1 1 1] );
+  QuaternionVisualization( <span class="string">'initialize'</span>, file, h.fig );
+
+  <span class="comment">% Buttons</span>
+  f   = {<span class="string">'Acceleration'</span>, <span class="string">'Angular Rates'</span> <span class="string">'Time'</span>};
+  n   = length(f);
+  p   = get(h.fig,<span class="string">'position'</span>);
+  dY  = p(4)/20;
+  yH  = p(4)/21;
+  y   = 0.5;
+  x   = 0.15;
+  wX  = p(3)/6;
+
+  <span class="comment">% Create pushbuttons and defaults</span>
+  <span class="keyword">for</span> k = 1:n
+    h.pushbutton(k) = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'text'</span>,<span class="string">'string'</span>,f{k},<span class="keyword">...</span>
+                                 <span class="string">'position'</span>,[x y wX yH]);
+    h.text(k) = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'text'</span>,<span class="string">'string'</span>,<span class="string">''</span>,<span class="keyword">...</span>
+                           <span class="string">'position'</span>,[x+wX y 2*wX yH]);
+    y = y + dY;
+  <span class="keyword">end</span>
+
+  h.onButton = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'togglebutton'</span>,<span class="keyword">...</span>
+    <span class="string">'string'</span>,<span class="string">'Start/Stop'</span>,<span class="string">'position'</span>,[x y wX yH],<span class="string">'ForegroundColor'</span>,<span class="string">'red'</span>,<span class="keyword">...</span>
+    <span class="string">'callback'</span>,@StartStop);
+  y = y + dY;
+  h.clrButton = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+    <span class="string">'string'</span>,<span class="string">'Clear Data'</span>,<span class="string">'position'</span>,[x y wX yH],<span class="string">'callback'</span>,@Clear);
+  y = y + dY;
+  h.quitButton = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+    <span class="string">'string'</span>,<span class="string">'Quit'</span>,<span class="string">'position'</span>,[x y wX yH],<span class="string">'callback'</span>,@Quit);
+  y = y + dY;
+  h.calibrateButton = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+    <span class="string">'string'</span>,<span class="string">'Calibrate'</span>,<span class="string">'position'</span>,[x y wX yH],<span class="string">'callback'</span>,@Calibrate);
+  y = y + dY;
+  h.saveButton = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'pushbutton'</span>,<span class="string">'string'</span>,<span class="string">'Save'</span>,<span class="keyword">...</span>
+    <span class="string">'position'</span>,[x y wX yH],<span class="string">'callback'</span>,@SaveFile);   y = y + dY;
+  h.on3D = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'togglebutton'</span>,<span class="string">'string'</span>,<span class="string">'3D on/off'</span>,<span class="keyword">...</span>
+    <span class="string">'position'</span>,[x y wX yH],<span class="string">'ForegroundColor'</span>,<span class="string">'red'</span>,<span class="string">'callback'</span>,@On3D);
+
+  h.matFile = uicontrol( h.fig,<span class="string">'style'</span>,<span class="string">'edit'</span>, <span class="string">'string'</span>,<span class="string">'MyDancer'</span>,<span class="keyword">...</span>
+    <span class="string">'position'</span>,[x+wX y wX yH]);
+
+  <span class="comment">% 3D on/off button callback</span>
+    <span class="keyword">function</span> On3D(~, ~, ~ )
+      on3D = ~on3D;
+    <span class="keyword">end</span>
+
+  <span class="comment">% Start/Stop button callback</span>
+    <span class="keyword">function</span> StartStop(hObject, ~, ~ )
+      <span class="keyword">if</span>( hObject.Value )
+        uiresume;
+      <span class="keyword">else</span>
+        SaveFile;
+        uiwait
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+  <span class="comment">% Quit button callback</span>
+    <span class="keyword">function</span> Quit(~, ~, ~ )
+      button = questdlg(<span class="string">'Save Data?'</span>,<span class="string">'Exit Dialog'</span>,<span class="string">'Yes'</span>,<span class="string">'No'</span>,<span class="string">'No'</span>);
+      <span class="keyword">switch</span> button
+        <span class="keyword">case</span> <span class="string">'Yes'</span>
+          <span class="comment">% Save data</span>
+        <span class="keyword">case</span> <span class="string">'No'</span>
+      <span class="keyword">end</span>
+      quitNow = true;
+      uiresume
+    <span class="keyword">end</span>
+
+  <span class="comment">% Clear button callback</span>
+    <span class="keyword">function</span> Clear(~, ~, ~ )
+      kStore      = 1;
+      accelStore  = zeros(3,1000);
+      gyroStore   = zeros(3,1000);
+      quatStore   = zeros(4,1000);
+      timeStore   = zeros(1,1000);
+      time        = 0;
+    <span class="keyword">end</span>
+
+  <span class="comment">% Calibrate button callback</span>
+    <span class="keyword">function</span> Calibrate(~, ~, ~ )
+      a       = fread(b,91);
+      dIMU    = DataFromIMU( a );
+      a0      = dIMU.accel;
+      q0      = dIMU.quat;
+      QuaternionVisualization( <span class="string">'update'</span>, q0 )
+    <span class="keyword">end</span>
+
+  <span class="comment">% Save button call back</span>
+    <span class="keyword">function</span> SaveFile(~,~,~)
+      cd <span class="string">TestData</span>
+      fileName = get(h.matFile,<span class="string">'string'</span>);
+      s = dir;
+      n = length(s);
+      fNames = cell(1,n-2);
+      <span class="keyword">for</span> kF = 3:n
+        fNames{kF-2} = s(kF).name(1:end-4);
+      <span class="keyword">end</span>
+      j = contains(fNames,fileName);
+      m = 0;
+      <span class="keyword">if</span>( ~isempty(j) )
+        <span class="keyword">for</span> kF = 1:length(j)
+          <span class="keyword">if</span>( j(kF))
+            f = fNames{kF};
+            i = strfind(f,<span class="string">'_'</span>);
+            m = str2double(f(i+1:end));
+          <span class="keyword">end</span>
+        <span class="keyword">end</span>
+      <span class="keyword">end</span>
+
+      timeStore(kStore:end) = [];
+      gyroStore(:,kStore:end) = [];
+      quatStore(:,kStore:end) = [];
+      accelStore(:,kStore:end) = [];
+
+      state = [gyroStore;accelStore;quatStore];
+      time  = timeStore;
+
+      save(sprintf(<span class="string">'%s_%d.mat'</span>,fileName,m+1), <span class="string">'state'</span>,<span class="string">'time'</span>);
+
+      kStore      = 1;
+      accelStore  = zeros(3,1000);
+      gyroStore   = zeros(3,1000);
+      quatStore   = zeros(4,1000);
+      timeStore   = zeros(1,1000);
+      time        = 0;
+
+      cd <span class="string">..</span>
+
+      gPlot = GUIPlots( <span class="string">'initialize'</span>, [], [], gPlot );
+
+    <span class="keyword">end</span>
+
+  <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="5">Copyright</h2><p>Copyright (c) 2019 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% DANCERGUI Interactive tool for dancer data acquisition from an IMU.
+% This GUI is designed to gather data from an IMU worn by a dancer. The
+% input file must be of type .obj. Requires the Instrument Control Toolbox
+% to talk to the IMU using bluetooth.
+%
+% Type DancerGUI for a demo.
+%
+%% Form:
+%   DancerGUI;        % demo of Ballerina.obj
+%   DancerGUI( file )
+%
+%% Inputs
+%   file  (1,:) File name - needs to be a complete path name
+%
+%% Outputs
+%   Saves to a MAT file
+%
+%% See also
+% DataFromIMU, Bluetooth, 
+
+function DancerGUI( file )
+
+% Demo
+if( nargin < 1 )
+  DancerGUI('Ballerina.obj');
+  return
+end
+
+% Storage of data need by the deep learning system
+kStore      = 1;
+accelStore  = zeros(3,1000);
+gyroStore   = zeros(3,1000);
+quatStore   = zeros(4,1000);
+timeStore   = zeros(1,1000);
+time        = 0;
+on3D        = false;
+quitNow     = false;
+
+sZ = get(0,'ScreenSize') + [99 99 -200 -200];
+
+h.fig = figure('name','Dancer Data Acquisition','position',sZ,...
+  'units','pixels','NumberTitle','off','tag','DancerGUI',...
+  'color',[0.9 0.9 0.9]);
+
+% Plot display
+gPlot.yLabel = {'\omega_x' '\omega_y' '\omega_z' 'a_x' 'a_y' 'a_z'};
+gPlot.tLabel = 'Time (sec)';
+gPlot.tLim   = [0 100];
+gPlot.pos    = [0.45    0.88    0.46    0.1];
+gPlot.color  = 'b';
+gPlot.width  = 1;
+
+% Calibration
+q0         = [1;0;0;0];
+a0         = [0;0;0];
+
+dIMU.accel = a0;
+dIMU.quat  = q0;
+
+% Initialize the GUI
+DrawGUI;
+
+% Get bluetooth information
+if exist('instrreset')
+  instrreset; % Just in case the IMU wasn't close properly. removed in future release
+  btInfo  = instrhwinfo('Bluetooth');
+else
+  btInfo.RemoteIDs = [];
+end
+
+if( ~isempty(btInfo.RemoteIDs) )
+  % Display the information about the first device discovered
+  btInfo.RemoteNames(1)
+  btInfo.RemoteIDs(1)
+  for iB = length(btInfo.RemoteIDs)
+    if( strcmp(btInfo.RemoteNames(iB),'LPMSB2-4B31D6') )
+      break;
+    end
+  end
+  b = Bluetooth(btInfo.RemoteIDs{iB}, 1);
+  fopen(b); % No output allowed for some reason
+  noIMU = false;
+  a     = fread(b,91);
+  dIMU  = DataFromIMU( a );
+else
+  warndlg('The IMU is not available.', 'Hardware Configuration')
+  noIMU   = true;
+end
+
+% Wait for user input
+uiwait;
+% The run loop
+time = 0;
+tic
+while(1)
+  if( noIMU )
+    omegaZ = 2*pi;
+    dT     = toc;
+    time   = time + dT;
+    tic
+    a      = omegaZ*time;
+    q      = [cos(a);0;0;sin(a)];
+    accel  = [0;0;sin(a)];
+    omega  = [0;0;omegaZ];
+  else
+    % Query the bluetooth device
+    a = fread(b,91);
+    pause(0.1); % needed so not to overload the bluetooth device
+
+    dT   = toc;
+    time = time + dT;
+    tic
+
+    % Get a data structure
+    if( length(a) > 1 )
+      dIMU = DataFromIMU( a );
+    end
+    accel  = dIMU.accel - a0;
+    omega  = dIMU.gyro;
+    q      = QuaternionMultiplication(q0,dIMU.quat);
+
+    timeStore(1,kStore)  = time;
+    accelStore(:,kStore) = accel;
+    gyroStore(:,kStore)  = omega;
+    quatStore(:,kStore)  = q;
+    kStore = kStore + 1;
+  end
+
+  if( quitNow )
+    close( h.fig )
+    return
+  else
+    if( on3D )
+      QuaternionVisualization( 'update', q );
+    end
+    set(h.text(1),'string',sprintf('[%5.2f;%5.2f;%5.2f] m/s^2',accel));
+    set(h.text(2),'string',sprintf('[%5.2f;%5.2f;%5.2f] rad/s',omega));
+    set(h.text(3),'string',datestr(now));
+    gPlot = GUIPlots( 'update', [omega;accel], time, gPlot );
+  end
+end
+
+  function DrawGUI
+  % Create the GUI
+
+  % Plots
+  gPlot = GUIPlots( 'initialize', [], [], gPlot );
+
+  % Quaternion display
+  subplot('position',[0.05 0.5 0.4 0.4],'DataAspectRatio',[1 1 1],...
+          'PlotBoxAspectRatio',[1 1 1] );
+  QuaternionVisualization( 'initialize', file, h.fig );
+
+  % Buttons
+  f   = {'Acceleration', 'Angular Rates' 'Time'};
+  n   = length(f);
+  p   = get(h.fig,'position');
+  dY  = p(4)/20;
+  yH  = p(4)/21;
+  y   = 0.5;
+  x   = 0.15;
+  wX  = p(3)/6;
+
+  % Create pushbuttons and defaults
+  for k = 1:n
+    h.pushbutton(k) = uicontrol( h.fig,'style','text','string',f{k},...
+                                 'position',[x y wX yH]);
+    h.text(k) = uicontrol( h.fig,'style','text','string','',...
+                           'position',[x+wX y 2*wX yH]);
+    y = y + dY;
+  end
+
+  h.onButton = uicontrol( h.fig,'style','togglebutton',...
+    'string','Start/Stop','position',[x y wX yH],'ForegroundColor','red',...
+    'callback',@StartStop);
+  y = y + dY;
+  h.clrButton = uicontrol( h.fig,'style','pushbutton',...
+    'string','Clear Data','position',[x y wX yH],'callback',@Clear);
+  y = y + dY;
+  h.quitButton = uicontrol( h.fig,'style','pushbutton',...
+    'string','Quit','position',[x y wX yH],'callback',@Quit);
+  y = y + dY;
+  h.calibrateButton = uicontrol( h.fig,'style','pushbutton',...
+    'string','Calibrate','position',[x y wX yH],'callback',@Calibrate);
+  y = y + dY;
+  h.saveButton = uicontrol( h.fig,'style','pushbutton','string','Save',...
+    'position',[x y wX yH],'callback',@SaveFile);   y = y + dY;
+  h.on3D = uicontrol( h.fig,'style','togglebutton','string','3D on/off',...
+    'position',[x y wX yH],'ForegroundColor','red','callback',@On3D);
+
+  h.matFile = uicontrol( h.fig,'style','edit', 'string','MyDancer',...
+    'position',[x+wX y wX yH]);
+
+  % 3D on/off button callback
+    function On3D(~, ~, ~ )
+      on3D = ~on3D;
+    end
+
+  % Start/Stop button callback
+    function StartStop(hObject, ~, ~ )
+      if( hObject.Value )
+        uiresume;
+      else
+        SaveFile;
+        uiwait
+      end
+    end
+
+  % Quit button callback
+    function Quit(~, ~, ~ )
+      button = questdlg('Save Data?','Exit Dialog','Yes','No','No');
+      switch button
+        case 'Yes'
+          % Save data
+        case 'No'
+      end
+      quitNow = true;
+      uiresume
+    end
+
+  % Clear button callback
+    function Clear(~, ~, ~ )
+      kStore      = 1;
+      accelStore  = zeros(3,1000);
+      gyroStore   = zeros(3,1000);
+      quatStore   = zeros(4,1000);
+      timeStore   = zeros(1,1000);
+      time        = 0;
+    end
+
+  % Calibrate button callback
+    function Calibrate(~, ~, ~ )
+      a       = fread(b,91);
+      dIMU    = DataFromIMU( a );
+      a0      = dIMU.accel;
+      q0      = dIMU.quat;
+      QuaternionVisualization( 'update', q0 )
+    end
+
+  % Save button call back
+    function SaveFile(~,~,~)
+      cd TestData
+      fileName = get(h.matFile,'string');
+      s = dir;
+      n = length(s);
+      fNames = cell(1,n-2);
+      for kF = 3:n
+        fNames{kF-2} = s(kF).name(1:end-4);
+      end
+      j = contains(fNames,fileName);
+      m = 0;
+      if( ~isempty(j) )
+        for kF = 1:length(j)
+          if( j(kF))
+            f = fNames{kF};
+            i = strfind(f,'_');
+            m = str2double(f(i+1:end));
+          end
+        end
+      end
+
+      timeStore(kStore:end) = [];
+      gyroStore(:,kStore:end) = [];
+      quatStore(:,kStore:end) = [];
+      accelStore(:,kStore:end) = [];
+
+      state = [gyroStore;accelStore;quatStore];
+      time  = timeStore;
+
+      save(sprintf('%s_%d.mat',fileName,m+1), 'state','time');
+
+      kStore      = 1;
+      accelStore  = zeros(3,1000);
+      gyroStore   = zeros(3,1000);
+      quatStore   = zeros(4,1000);
+      timeStore   = zeros(1,1000);
+      time        = 0;
+
+      cd ..
+
+      gPlot = GUIPlots( 'initialize', [], [], gPlot );
+
+    end
+
+  end
+
+end
+
+%% Copyright
+% Copyright (c) 2019 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,289 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>NNEarthSensor</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="NNEarthSensor.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Demonstrate LEO static Earth Sensor using a neural network.</a></li><li><a href="#2">Testing</a></li><li><a href="#3">Copyright</a></li></ul></div><h2 id="1">Demonstrate LEO static Earth Sensor using a neural network.</h2><p>The neural network is trained using known roll and pitch.</p><pre class="codeinput">degToRad    = pi/180;
+rE          = 6378.14;
+jD0         = 2459855.22759992;
+el          = [6796.09601357439 0.901411020464568 2.85901984679868<span class="keyword">...</span>
+               1.64265231211276 0.000612135990692413 -0.986951254735983];
+d           = StaticEarthSensor;
+[r,v,t]     = RVFromKepler(el);
+rMean       = mean(vecnorm(r));
+qECIToLVLH  = QLVLH(r,v);
+d.el        = 64*ones(1,4)*degToRad;
+d.az        = [0 pi/2 pi 3*pi/2] + pi/4;
+d.pAng      = 4*[  1     1    -1    -1
+                   1    -1    -1     1];
+
+n           = 20;
+roll        = linspace(-6,6,n);
+pitch       = linspace(-6,6,n);
+i           = 1;
+y           = zeros(4,n*n);
+x           = zeros(2,n*n);
+
+StaticEarthSensor(qECIToLVLH(:,1),r(:,1),d)
+
+<span class="keyword">for</span> j = 1:n
+  <span class="keyword">for</span> k = 1:n
+    rJ          = roll(j);
+    pK          = pitch(k);
+    mRoll       = [1 0 0;0 cosd(rJ) -sind(rJ);0 sind(rJ) cosd(rJ)];
+    mPitch      = [cosd(pK) 0 -sind(pK);0 1 0;sind(pK) 0 cosd(pK)];
+    qLVLHToBody = Mat2Q(mRoll*mPitch);
+    qECIToBody  = QMult(qECIToLVLH(:,1),qLVLHToBody);
+
+    y(:,i)      = StaticEarthSensor(qECIToBody,r(:,1),d);
+    x(:,i)      = [roll(j);pitch(k)];
+    i           = i + 1;
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Neural net training</span>
+net = feedforwardnet(20); <span class="comment">% Geneate the neural net structure</span>
+net = configure( net, y, x ); <span class="comment">% Configure based on inputs and outputs</span>
+
+net.layers{1}.transferFcn = <span class="string">'poslin'</span>; <span class="comment">% Set as purelin</span>
+net.name  = <span class="string">'Earth Sensor'</span>;
+net       = train(net,y,x); <span class="comment">% Train the network</span>
+c         = sim(net,y); <span class="comment">% Simulate the neural network</span>
+leg       = {<span class="string">'True'</span> <span class="string">'Neural Net'</span>};
+
+PlotSet(1:size(c,2),[x;c],<span class="string">'x label'</span>,<span class="string">'Set'</span>,<span class="keyword">...</span>
+  <span class="string">'y label'</span>,{<span class="string">'Roll'</span> <span class="string">'Pitch'</span>},<span class="string">'figure title'</span>,<span class="string">'Neural Network'</span>,<span class="keyword">...</span>
+  <span class="string">'plot set'</span>,{[1 3],[2 4]},<span class="string">'legend'</span>,{leg leg});
+
+yL = {<span class="string">'Roll'</span> <span class="string">'Pitch'</span> <span class="string">'y_1'</span> <span class="string">'y_2'</span> <span class="string">'y_3'</span> <span class="string">'y_4'</span>};
+PlotSet(1:size(c,2),[x;y],<span class="string">'x label'</span>,<span class="string">'Set'</span>,<span class="string">'y label'</span>,yL,<span class="string">'Neural Network Data'</span>)
+</pre><pre class="codeoutput">
+ans =
+
+  Columns 1 through 6
+
+            0       7.3432       14.506       21.311       27.591       33.192
+
+  Columns 7 through 12
+
+       37.976       41.825       44.644       46.363       46.941       46.363
+
+  Columns 13 through 18
+
+       44.644       41.825       37.976       33.192       27.591       21.311
+
+  Columns 19 through 24
+
+       14.506       7.3432   5.7486e-15      -7.3432      -14.506      -21.311
+
+  Columns 25 through 30
+
+      -27.591      -33.192      -37.976      -41.825      -44.644      -46.363
+
+  Columns 31 through 36
+
+      -46.941      -46.363      -44.644      -41.825      -37.976      -33.192
+
+  Columns 37 through 40
+
+      -27.591      -21.311      -14.506      -7.3432
+
+Neural Network Data is not an allowable parameter
+
+ans = 
+
+  Figure (3: PlotSet) with properties:
+
+      Number: 3
+        Name: 'PlotSet'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="NNEarthSensor_01.png" alt=""> <img vspace="5" hspace="5" src="NNEarthSensor_02.png" alt=""> <img vspace="5" hspace="5" src="NNEarthSensor_03.png" alt=""> <img vspace="5" hspace="5" src="NNEarthSensor_04.png" alt=""> <h2 id="2">Testing</h2><pre class="codeinput">n     = length(t);
+roll  = 2;
+pitch = 0;
+c     = zeros(2,n);
+<span class="keyword">for</span> k = 1:n
+  rJ          = roll;
+  pK          = pitch;
+  mRoll       = [1 0 0;0 cosd(rJ) -sind(rJ);0 sind(rJ) cosd(rJ)];
+  mPitch      = [cosd(pK) 0 -sind(pK);0 1 0;sind(pK) 0 cosd(pK)];
+  qLVLHToBody = Mat2Q(mRoll*mPitch);
+  qECIToBody  = QMult(qECIToLVLH(:,k),qLVLHToBody);
+  y           = StaticEarthSensor(qECIToBody,r(:,k),d);
+  c(:,k)    	= sim(net,y');
+<span class="keyword">end</span>
+
+[t,tL]  = TimeLabel(t);
+s       = sprintf(<span class="string">'Roll = %8.2f deg Pitch = %8.2f deg'</span>,roll,pitch);
+
+PlotSet(t,c,<span class="string">'x label'</span>,tL,<span class="string">'y label'</span>, {<span class="string">'Roll'</span> <span class="string">'Pitch'</span>},<span class="string">'figure title'</span>,s)
+</pre><pre class="codeoutput">
+ans = 
+
+  Figure (4: Roll =     2.00 deg Pitch =     0.00 deg) with properties:
+
+      Number: 4
+        Name: 'Roll =     2.00 deg Pitch =     0.00 deg'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="NNEarthSensor_05.png" alt=""> <h2 id="3">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Demonstrate LEO static Earth Sensor using a neural network.
+% The neural network is trained using known roll and pitch.
+
+degToRad    = pi/180;
+rE          = 6378.14;
+jD0         = 2459855.22759992;
+el          = [6796.09601357439 0.901411020464568 2.85901984679868...
+               1.64265231211276 0.000612135990692413 -0.986951254735983];
+d           = StaticEarthSensor;
+[r,v,t]     = RVFromKepler(el);
+rMean       = mean(vecnorm(r));
+qECIToLVLH  = QLVLH(r,v);
+d.el        = 64*ones(1,4)*degToRad;
+d.az        = [0 pi/2 pi 3*pi/2] + pi/4;
+d.pAng      = 4*[  1     1    -1    -1
+                   1    -1    -1     1];
+
+n           = 20;
+roll        = linspace(-6,6,n);
+pitch       = linspace(-6,6,n);
+i           = 1;
+y           = zeros(4,n*n);
+x           = zeros(2,n*n);
+
+StaticEarthSensor(qECIToLVLH(:,1),r(:,1),d)
+
+for j = 1:n  
+  for k = 1:n
+    rJ          = roll(j);
+    pK          = pitch(k);
+    mRoll       = [1 0 0;0 cosd(rJ) -sind(rJ);0 sind(rJ) cosd(rJ)];
+    mPitch      = [cosd(pK) 0 -sind(pK);0 1 0;sind(pK) 0 cosd(pK)];
+    qLVLHToBody = Mat2Q(mRoll*mPitch);
+    qECIToBody  = QMult(qECIToLVLH(:,1),qLVLHToBody);
+
+    y(:,i)      = StaticEarthSensor(qECIToBody,r(:,1),d);
+    x(:,i)      = [roll(j);pitch(k)];
+    i           = i + 1;
+  end
+end
+
+% Neural net training 
+net = feedforwardnet(20); % Geneate the neural net structure
+net = configure( net, y, x ); % Configure based on inputs and outputs
+
+net.layers{1}.transferFcn = 'poslin'; % Set as purelin
+net.name  = 'Earth Sensor';
+net       = train(net,y,x); % Train the network
+c         = sim(net,y); % Simulate the neural network
+leg       = {'True' 'Neural Net'};
+
+PlotSet(1:size(c,2),[x;c],'x label','Set',...
+  'y label',{'Roll' 'Pitch'},'figure title','Neural Network',...
+  'plot set',{[1 3],[2 4]},'legend',{leg leg});
+  
+yL = {'Roll' 'Pitch' 'y_1' 'y_2' 'y_3' 'y_4'};
+PlotSet(1:size(c,2),[x;y],'x label','Set','y label',yL,'Neural Network Data')
+
+%% Testing
+n     = length(t);
+roll  = 2;
+pitch = 0;
+c     = zeros(2,n);
+for k = 1:n
+  rJ          = roll;
+  pK          = pitch;
+  mRoll       = [1 0 0;0 cosd(rJ) -sind(rJ);0 sind(rJ) cosd(rJ)];
+  mPitch      = [cosd(pK) 0 -sind(pK);0 1 0;sind(pK) 0 cosd(pK)];
+  qLVLHToBody = Mat2Q(mRoll*mPitch);
+  qECIToBody  = QMult(qECIToLVLH(:,k),qLVLHToBody);
+  y           = StaticEarthSensor(qECIToBody,r(:,k),d);
+  c(:,k)    	= sim(net,y');
+end
+
+[t,tL]  = TimeLabel(t);
+s       = sprintf('Roll = %8.2f deg Pitch = %8.2f deg',roll,pitch);
+
+PlotSet(t,c,'x label',tL,'y label', {'Roll' 'Pitch'},'figure title',s)
+
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+##### SOURCE END #####
+--></body></html>

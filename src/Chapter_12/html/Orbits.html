@@ -1,0 +1,171 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Generate Orbits for angles-only element estimation</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="Orbits.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Generate Orbits for angles-only element estimation</h1><!--introduction--><p>Saves a mat-file called OrbitData used by other demos.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">See also</a></li><li><a href="#2">Simulate each of the orbits</a></li><li><a href="#3">Save for the Deep Learning algorithm</a></li><li><a href="#4">Plot</a></li><li><a href="#5">Copyright</a></li></ul></div><h2 id="1">See also</h2><p>El2RV, RungeKutta, RHSOrbit, TimeLabel, PlotSet</p><pre class="codeinput">nEl   = 500;          <span class="comment">% Number of sets of data</span>
+d     = struct;       <span class="comment">% Initialize</span>
+d.mu  = 3.98600436e5; <span class="comment">% Gravitational parameter, km^3/s^2</span>
+d.a   = [0;0];        <span class="comment">% Perturbing acceleration</span>
+
+<span class="comment">% Random elements</span>
+e     = 0.6*rand(1,nEl);          <span class="comment">% Eccentricity</span>
+a     = 8000 + 1000*randn(1,nEl); <span class="comment">% Semi-major axis</span>
+M     = 0.25*pi*rand(1,nEl);      <span class="comment">% Mean anomaly</span>
+
+<span class="comment">% Set up the simulation</span>
+nSim  = 2000; <span class="comment">% Number of simulation steps</span>
+dT    = 2; <span class="comment">% Time step</span>
+
+<span class="comment">% Only use some of the sim steps</span>
+jUse  = 1:10:nSim;
+
+<span class="comment">% Data for Deep Learning</span>
+data  = cell(nEl,1);
+</pre><h2 id="2">Simulate each of the orbits</h2><pre class="codeinput">x     = zeros(4,nSim);
+t     = (0:(nSim-1))*dT;
+clear <span class="string">el</span>;
+el(nEl) = struct(<span class="string">'a'</span>,7000,<span class="string">'e'</span>,0); <span class="comment">% initialize struct array</span>
+
+<span class="keyword">for</span> k = 1:nEl
+  [r,v] = El2RV([a(k) 0 0 0 e(k) M(k)]);
+  x     = [r(1:2);v(1:2)];
+  xP    = zeros(4,nSim);
+  <span class="keyword">for</span> j = 1:nSim
+    xP(:,j) = x;
+    x       = RungeKutta( @RHSOrbit, 0, x, dT, d );
+  <span class="keyword">end</span>
+  data{k} = atan2(xP(2,jUse),xP(1,jUse));
+  el(k).a = a(k);
+  el(k).e = e(k);
+<span class="keyword">end</span>
+</pre><h2 id="3">Save for the Deep Learning algorithm</h2><pre class="codeinput">save(<span class="string">'OrbitData'</span>,<span class="string">'data'</span>,<span class="string">'el'</span>);
+</pre><h2 id="4">Plot</h2><pre class="codeinput">[t, tL] = TimeLabel(t(jUse));
+angle   = data{k}(1,:);
+PlotSet(t,angle,<span class="string">'x label'</span>, tL,<span class="string">'y label'</span>,<span class="string">'Angle (rad)'</span>,<span class="string">'figure title'</span>,<span class="string">'Angle'</span>);
+PlotSet(xP(1,:),xP(2,:),<span class="string">'x label'</span>, <span class="string">'x (km)'</span>,<span class="string">'y label'</span>,<span class="string">'y (km)'</span>,<span class="string">'figure title'</span>,<span class="string">'Orbit'</span>);
+</pre><img vspace="5" hspace="5" src="Orbits_01.png" alt=""> <img vspace="5" hspace="5" src="Orbits_02.png" alt=""> <h2 id="5">Copyright</h2><p>Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Generate Orbits for angles-only element estimation
+% Saves a mat-file called OrbitData used by other demos.
+%% See also
+% El2RV, RungeKutta, RHSOrbit, TimeLabel, PlotSet
+
+nEl   = 500;          % Number of sets of data
+d     = struct;       % Initialize
+d.mu  = 3.98600436e5; % Gravitational parameter, km^3/s^2
+d.a   = [0;0];        % Perturbing acceleration
+
+% Random elements
+e     = 0.6*rand(1,nEl);          % Eccentricity
+a     = 8000 + 1000*randn(1,nEl); % Semi-major axis
+M     = 0.25*pi*rand(1,nEl);      % Mean anomaly
+
+% Set up the simulation
+nSim  = 2000; % Number of simulation steps
+dT    = 2; % Time step
+
+% Only use some of the sim steps
+jUse  = 1:10:nSim;
+
+% Data for Deep Learning
+data  = cell(nEl,1);
+
+%% Simulate each of the orbits
+x     = zeros(4,nSim);
+t     = (0:(nSim-1))*dT;
+clear el;
+el(nEl) = struct('a',7000,'e',0); % initialize struct array
+
+for k = 1:nEl
+  [r,v] = El2RV([a(k) 0 0 0 e(k) M(k)]);
+  x     = [r(1:2);v(1:2)];
+  xP    = zeros(4,nSim);
+  for j = 1:nSim
+    xP(:,j) = x;
+    x       = RungeKutta( @RHSOrbit, 0, x, dT, d );
+  end
+  data{k} = atan2(xP(2,jUse),xP(1,jUse));
+  el(k).a = a(k);
+  el(k).e = e(k);
+end
+
+%% Save for the Deep Learning algorithm
+save('OrbitData','data','el');
+
+%% Plot
+[t, tL] = TimeLabel(t(jUse));
+angle   = data{k}(1,:);
+PlotSet(t,angle,'x label', tL,'y label','Angle (rad)','figure title','Angle');
+PlotSet(xP(1,:),xP(2,:),'x label', 'x (km)','y label','y (km)','figure title','Orbit');
+
+
+%% Copyright
+% Copyright (c) 2019, 2022 Princeton Satellite Systems, Inc.
+% All rights reserved.
+##### SOURCE END #####
+--></body></html>

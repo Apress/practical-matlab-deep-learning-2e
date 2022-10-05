@@ -1,0 +1,222 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SEGMENTEDEARTHSENSOR Earth sensor model</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="SegmentedEarthSensor.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>SEGMENTEDEARTHSENSOR Earth sensor model</h1><!--introduction--><p>The boresight is along +z. It will draw a picture if there are no outputs.</p><p>Type SegmentedEarthSensor for a demo.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Form:</a></li><li><a href="#2">Inputs</a></li><li><a href="#3">Outputs</a></li><li><a href="#4">StaticEarthSensor&gt;Demo</a></li><li><a href="#5">StaticEarthSensor&gt;Default Data Structure</a></li><li><a href="#6">StaticEarthSensor&gt;EarthSensorElement</a></li><li><a href="#7">Copyright</a></li></ul></div><h2 id="1">Form:</h2><pre class="language-matlab">y = SegmentedEarthSensor(q,r,d)
+</pre><h2 id="2">Inputs</h2><pre class="language-matlab">q   (4,1)	ECI <span class="string">to</span> <span class="string">Body</span>
+r   (3,1)	Vector <span class="string">from</span> <span class="string">planet</span> <span class="string">center</span> <span class="string">to</span> <span class="string">spacecraft</span>
+d   (.)   Data <span class="string">structure</span>
+          .n              (1,1) Number <span class="string">of</span> <span class="string">segments</span> <span class="string">in</span> <span class="string">the</span> <span class="string">planet</span> <span class="string">circle</span>
+          .p              (2,:) Vertices <span class="string">for</span> <span class="string">the</span> <span class="string">detector</span>
+          .pAng           (2,:) Vertices <span class="string">in</span> <span class="string">angles</span> <span class="string">(deg)</span>
+          .az             (1,n) Azimuth <span class="string">of</span> <span class="string">the</span> <span class="string">detector</span> <span class="string">elements</span>
+          .el             (1,n) Elevation <span class="string">of</span> <span class="string">the</span> <span class="string">detector</span> <span class="string">elements</span>
+          .rPlanet        (1,1) Planet <span class="string">radius</span>
+          .fL             (1,1) Focal <span class="string">length</span>
+          .qBodyToSensor	(4,1) Quaternion <span class="string">from</span> <span class="string">body</span> <span class="string">to</span> <span class="string">sensor</span> <span class="string">frame</span>
+          .scale          (1,1) Output/detector area <span class="string">intersecting</span>
+</pre><h2 id="3">Outputs</h2><pre class="language-matlab">y   (:,1)	Detector <span class="string">outputs</span>
+</pre><h2 id="4">StaticEarthSensor&gt;Demo</h2><h2 id="5">StaticEarthSensor&gt;Default Data Structure</h2><h2 id="6">StaticEarthSensor&gt;EarthSensorElement</h2><pre class="codeoutput">
+ans = 
+
+  Figure (1: Earth Sensor) with properties:
+
+      Number: 1
+        Name: 'Earth Sensor'
+       Color: [0.94 0.94 0.94]
+    Position: [560 528 560 420]
+       Units: 'pixels'
+
+  Use GET to show all properties
+
+</pre><img vspace="5" hspace="5" src="SegmentedEarthSensor_01.png" alt=""> <h2 id="7">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% SEGMENTEDEARTHSENSOR Earth sensor model
+% The boresight is along +z. It will draw a picture if there are no 
+% outputs. 
+%
+% Type SegmentedEarthSensor for a demo.
+%
+%% Form:
+%   y = SegmentedEarthSensor(q,r,d)
+%
+%% Inputs
+%   q   (4,1)	ECI to Body
+%   r   (3,1)	Vector from planet center to spacecraft
+%   d   (.)   Data structure
+%             .n              (1,1) Number of segments in the planet circle
+%             .p              (2,:) Vertices for the detector
+%             .pAng           (2,:) Vertices in angles (deg)
+%             .az             (1,n) Azimuth of the detector elements
+%             .el             (1,n) Elevation of the detector elements 
+%             .rPlanet        (1,1) Planet radius
+%             .fL             (1,1) Focal length
+%             .qBodyToSensor	(4,1) Quaternion from body to sensor frame
+%             .scale          (1,1) Output/detector area intersecting 
+%
+%% Outputs
+%   y   (:,1)	Detector outputs
+%
+
+function y = SegmentedEarthSensor(q,r,d)
+
+% Demo
+if( nargin < 1 )
+  if( nargout == 0 )
+    Demo
+  else
+    y = DefaultDataStructure;
+  end
+  return
+end
+
+qECIToSensor  = QMult(q,d.qBodyToSensor);
+
+uNadir        = QForm(qECIToSensor,Unit(r));
+cEarth        = d.fL*uNadir(1:2);
+
+% Planet angular width
+ang           = asin(d.rPlanet/vecnorm(r));
+r             = d.fL*sin(ang);
+
+% Cycle through all the elements
+nP            = length(d.az);
+poly          = cell(1,nP);
+y             = zeros(1,nP);
+
+for k = 1:nP
+  az              = d.az(k);
+  el              = d.el(k);
+  rP              = [cos(az);sin(az)]*el;
+  c               = [cos(az) -sin(az);sin(az) cos(az)];
+  pK              = rP + c*d.p;
+  [y(k), poly{k}] = EarthSensorElement(r,d.n,pK,cEarth);
+end
+
+y(y > 0) = 1;
+
+% Default output
+if( nargout < 1 )
+  r       = vecnorm(r);
+	a       = linspace(0,2*pi-2*pi/d.n,d.n);
+  x       = r*cos(a) + cEarth(1);
+  y       = r*sin(a) + cEarth(2);
+  planet  = polyshape(x,y);
+
+  NewFigure('Earth Sensor')
+  plot(planet)
+  hold on
+  for k = 1:nP
+    plot(poly{k})
+  end
+  grid on
+  axis image
+end
+
+%% StaticEarthSensor>Demo
+function Demo
+d   = SegmentedEarthSensor;
+r   = [0;0;6700];
+SegmentedEarthSensor([1;0;0;0],r,d);
+
+%% StaticEarthSensor>Default Data Structure
+function d = DefaultDataStructure
+
+d.n             = 40;
+d.nSeg          = 10;
+d.p             = [  1     1    -1    -1
+                     1    -1    -1     1];
+d.az            = [zeros(1,10) (pi/2)*ones(1,10) pi*ones(1,10), (3*pi/2)*ones(1,10)];
+d.fL            = 50;
+el              = (0:2:18) + d.fL - 12;
+d.el            = [el el el el];
+d.rPlanet       = 6378.165;
+d.qBodyToSensor = [1;0;0;0];
+
+%% StaticEarthSensor>EarthSensorElement
+function [a,poly1] = EarthSensorElement(r,n,p,c)
+
+poly1 = polyshape(p(1,:),p(2,:));
+
+a     = linspace(0,2*pi-2*pi/n,n);
+x     = r*cos(a) + c(1);
+y     = r*sin(a) + c(2);
+
+poly2 = polyshape(x,y);
+poly3 = intersect(poly1,poly2);
+
+a     = area(poly3);
+
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+##### SOURCE END #####
+--></body></html>

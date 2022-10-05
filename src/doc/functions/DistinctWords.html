@@ -1,0 +1,190 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>DISTINCTWORDS Creates a dictionary from a string</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="DistinctWords.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>DISTINCTWORDS Creates a dictionary from a string</h1><!--introduction--><p>Type DistinctWords for a demo.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Form:</a></li><li><a href="#2">Inputs</a></li><li><a href="#3">Outputs</a></li><li><a href="#4">See also</a></li><li><a href="#5">DistinctWords&gt;Demo</a></li><li><a href="#6">Copyright</a></li></ul></div><h2 id="1">Form:</h2><pre class="language-matlab">d = DistinctWords( w )
+</pre><h2 id="2">Inputs</h2><pre class="language-matlab">w   (1,:) String
+</pre><h2 id="3">Outputs</h2><pre class="language-matlab">d   <span class="string">{:}</span>   <span class="string">List</span> <span class="string">of</span> <span class="string">distinct</span> <span class="string">words</span>
+n   (1,:) Sentence <span class="string">replaced</span> <span class="string">with</span> <span class="string">numbers</span>
+</pre><h2 id="4">See also</h2><p>erase, split,</p><pre class="codeoutput">
+d = 
+
+  1&times;38 string array
+
+  Columns 1 through 7
+
+    "No"    "a"    "actress"    "an"    "and"    "arrest"    "as"
+
+  Columns 8 through 12
+
+    "authorities"    "being"    "brands"    "businesswoman"    "but"
+
+  Columns 13 through 19
+
+    "career"    "carpet"    "face"    "held"    "her"    "house"    "it"
+
+  Columns 20 through 26
+
+    "knew"    "long"    "lucrative"    "luminary"    "luxury"    "of"    "one"
+
+  Columns 27 through 33
+
+    "records"    "red"    "scoured"    "she"    "successful"    "tax"    "the"
+
+  Columns 34 through 38
+
+    "then"    "type"    "under"    "was"    "while"
+
+
+n =
+
+  Columns 1 through 13
+
+     1    26    20    19    34    12    30    37     9    16    36     2    35
+
+  Columns 14 through 26
+
+    25    18     6    38    33    32     8    29    33    27    25    17    21
+
+  Columns 27 through 39
+
+     5    22    13     7     4     3     2    23    25    33    28    14     2
+
+  Columns 40 through 47
+
+    15    25    24    10     5     2    31    11
+
+</pre><h2 id="5">DistinctWords&gt;Demo</h2><pre class="codeoutput">
+w = 
+
+    "No one knew it then, but she was being held under a type of house arrest while the tax authorities scoured the records of her long and lucrative career as an actress, a luminary of the red carpet, a face of luxury brands and a successful businesswoman."
+
+</pre><h2 id="6">Copyright</h2><p>Copyright (c) 2019 Princeton Satellite Systems, Inc. All rights reserved.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% DISTINCTWORDS Creates a dictionary from a string
+% Type DistinctWords for a demo.
+%% Form:
+%   d = DistinctWords( w )
+%
+%% Inputs
+%   w   (1,:) String
+%
+%% Outputs
+%   d   {:}   List of distinct words
+%   n   (1,:) Sentence replaced with numbers
+%
+%% See also
+% erase, split, 
+
+function [d,n] = DistinctWords( w )
+
+% Demo
+if( nargin < 1 )
+  Demo;
+  return
+end
+
+% Remove punctuation
+w = erase(w,';');
+w = erase(w,',');
+w = erase(w,'.');
+
+% Find unique words
+s = split(w)';
+d = unique(s);
+
+if( nargout > 1 )
+  % find the numbers for the words
+  n = zeros(1,length(s));
+  for k = 1:length(s)
+    for j = 1:length(d)
+      if( d(j) == s(k) )
+        n(k) = j;
+        break;
+      end
+    end
+  end
+end
+
+
+%% DistinctWords>Demo
+function Demo
+w   = "No one knew it then, but she was being held under a type of house "...
+    + "arrest while the tax authorities scoured the records of her long "...
+      + "and lucrative career as an actress, a luminary of the red carpet, "...
+      + "a face of luxury brands and a successful businesswoman."
+[d,n]  = DistinctWords(w)
+
+
+
+%% Copyright
+% Copyright (c) 2019 Princeton Satellite Systems, Inc.
+% All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

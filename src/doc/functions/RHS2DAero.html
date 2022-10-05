@@ -1,0 +1,194 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>RHS2DAERO Two dimensional dynamical model</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-03"><meta name="DC.source" content="RHS2DAero.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>RHS2DAERO Two dimensional dynamical model</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Form:</a></li><li><a href="#2">Inputs</a></li><li><a href="#3">Outputs</a></li><li><a href="#4">RHS2DTitan&gt;DefaultDataStructure</a></li></ul></div><h2 id="1">Form:</h2><pre class="language-matlab">d = RHS2DAero;
+[xDot,q] = RHS2DAero( x, t, d )
+</pre><h2 id="2">Inputs</h2><pre class="language-matlab">x	(3,1) State <span class="string">[r</span>;uR;uT]
+t (1,1) Time (s) (unused)
+d (.)   Data <span class="string">structure</span>
+        .aR       (1,1) Aspect <span class="string">ratio</span>
+        .eps      (1,1) Oswald <span class="string">efficiency</span> <span class="string">factor</span>
+        .s        (1,1) Aerodynamic <span class="string">surface</span> <span class="string">area</span> <span class="string">(m^2)</span>
+        .cD0      (1,1) Zero <span class="string">lift</span> <span class="string">drag</span> <span class="string">coefficient</span>
+        .cLAlpha  (1,1) Lift <span class="string">coefficient</span>
+        .mass     (1,1) Mass (kg)
+        .alpha    (1,1) Angle <span class="string">of</span> <span class="string">attack</span> <span class="string">(rad)</span>
+        .thrust   (1,1) Thrust (N)
+        .x0       (3,1) Default <span class="string">state</span>
+        .states   {3,1} State <span class="string">names</span>
+        .mu       (1,1) Gravitational <span class="string">parameter</span>
+        .rPlanet  (1,1) Radius <span class="string">planet</span>
+        .funAtm   (1,1) Pointer <span class="string">to</span> <span class="string">atmospheric</span> <span class="string">function</span>
+</pre><h2 id="3">Outputs</h2><pre class="language-matlab">xDot	(3,1) State <span class="string">derivative</span> <span class="string">[r</span>;uR;uT]
+g     (1,1) Dynamic <span class="string">pressure</span>
+</pre><h2 id="4">RHS2DTitan&gt;DefaultDataStructure</h2><pre class="codeoutput">
+ans = 
+
+  struct with fields:
+
+         aR: 1.7
+        eps: 0.9
+          s: 10
+        cD0: 0.006
+    cLAlpha: 6.2832
+       mass: 2000
+      alpha: 0
+     thrust: 0
+         x0: [3&times;1 double]
+         mu: 9142.1
+    rPlanet: 2575
+     funAtm: @TitanAtmosphere
+     states: {'r (km)'  'u_r (km/s)'  'u_t (km/s)'}
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% RHS2DAERO Two dimensional dynamical model
+%
+%%  Form:
+%   d = RHS2DAero;
+%   [xDot,q] = RHS2DAero( x, t, d )
+%
+%% Inputs
+%   x	(3,1) State [r;uR;uT]
+%   t (1,1) Time (s) (unused)
+%   d (.)   Data structure
+%           .aR       (1,1) Aspect ratio
+%           .eps      (1,1) Oswald efficiency factor 
+%           .s        (1,1) Aerodynamic surface area (m^2)
+%           .cD0      (1,1) Zero lift drag coefficient
+%           .cLAlpha  (1,1) Lift coefficient
+%           .mass     (1,1) Mass (kg)
+%           .alpha    (1,1) Angle of attack (rad)
+%           .thrust   (1,1) Thrust (N)
+%           .x0       (3,1) Default state
+%           .states   {3,1} State names
+%           .mu       (1,1) Gravitational parameter
+%           .rPlanet  (1,1) Radius planet
+%           .funAtm   (1,1) Pointer to atmospheric function
+%
+%% Outputs
+%   xDot	(3,1) State derivative [r;uR;uT]
+%   g     (1,1) Dynamic pressure
+
+function [xDot, q] = RHS2DAero( x, ~, d )
+
+% Constants
+kMToM  = 1000;
+nToKN  = 0.001;
+
+% Return the default data structure
+if( nargin < 1 )
+  xDot = DefaultDataStructure;
+  return
+end
+
+% To clarify the code use local variables
+r       = x(1);
+uR      = x(2);
+uT      = x(3);
+
+% Lift and drag
+cL      = d.cLAlpha*d.alpha;
+k       = 1/(pi*d.aR*d.eps);
+cD      = d.cD0 + k*cL^2;
+
+% Atmospheric density
+h       = r - d.rPlanet;
+if( h <= 0 )
+  h = 0;
+end
+rho     = d.funAtm(h);
+
+% Forces
+uRM     = uR*kMToM;
+uTM     = uT*kMToM;
+w       = uRM^2 + uTM^2;
+qS      = 0.5*rho*w*d.s;
+u       = [uRM;uTM]/sqrt(w);
+drag    = -cD*qS*u;
+lift    =  cL*qS*[u(2);-u(1)];%[0 1;-1 0]*u;
+thrust  = d.thrust*[sin(d.alpha);cos(d.alpha)];
+a       = nToKN*(thrust + drag + lift)/d.mass;
+
+% State derivatives
+uRDot   = uT^2/r - d.mu/r^2 + a(1);
+uTDot   = -uT*uR/r + a(2);
+xDot    = [uR;uRDot;uTDot];
+
+%% RHS2DTitan>DefaultDataStructure
+function d = DefaultDataStructure
+
+mu	= 9.142117352579678e+03;
+r   = 2675;
+d = struct('aR',1.7,'eps',0.9,'s',10,'cD0',0.006,'cLAlpha',2*pi,...
+  'mass',2000,'alpha',0,'thrust',0,'x0',[r;0;sqrt(mu/r)],'mu',9.142117352579678e+03,...
+  'rPlanet',2575,'funAtm',@TitanAtmosphere);
+d.states = {'r (km)' 'u_r (km/s)', 'u_t (km/s)'};
+##### SOURCE END #####
+--></body></html>

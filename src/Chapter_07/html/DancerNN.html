@@ -1,0 +1,266 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>DancerNN</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-04"><meta name="DC.source" content="DancerNN.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Script to train and test the dancer neural net</a></li><li><a href="#2">Show one dancer's data</a></li><li><a href="#3">Load in and process the data</a></li><li><a href="#4">Set up the network</a></li><li><a href="#5">Train the network</a></li><li><a href="#6">Test the network</a></li><li><a href="#7">Copyright</a></li></ul></div><h2 id="1">Script to train and test the dancer neural net</h2><p>See also PlotSet, trainingOptions, categorical, trainNetwork, classify</p><pre class="codeinput">clear <span class="string">d</span> <span class="string">t</span> <span class="string">c</span>
+
+dancer = {<span class="string">'Ryoko'</span> <span class="string">'Shaye'</span>, <span class="string">'Emily'</span>, <span class="string">'Matanya'</span>};
+
+thisDir = fileparts(mfilename(<span class="string">'fullpath'</span>));
+cd0 = cd;
+cd(thisDir)
+</pre><h2 id="2">Show one dancer's data</h2><pre class="codeinput">cd <span class="string">TestData</span>
+s   = load(<span class="string">'Ryoko_10.mat'</span>);
+yL  = {<span class="string">'\omega_x'</span> <span class="string">'\omega_y'</span> <span class="string">'\omega_z'</span> <span class="string">'a_x'</span> <span class="string">'a_y'</span> <span class="string">'a_z'</span>};
+PlotSet(s.time,s.state(1:6,:),<span class="string">'x label'</span>,<span class="string">'Time (s)'</span>,<span class="string">'y label'</span>,yL,<span class="string">'figure title'</span>,dancer{1});
+</pre><img vspace="5" hspace="5" src="DancerNN_01.png" alt=""> <h2 id="3">Load in and process the data</h2><pre class="codeinput">n = 40;
+<span class="comment">% Get the data and remove bad data sets</span>
+i = 0;
+<span class="keyword">for</span> k = 1:length(dancer)
+  <span class="keyword">for</span> j = 1:10
+    s   = load(sprintf(<span class="string">'%s_%d.mat'</span>,dancer{k},j));
+    cS  = size(s.state,2);
+    <span class="keyword">if</span>( cS &gt; 7 )
+      i       = i + 1;
+      d{i,1}  = s.state; <span class="comment">%#ok&lt;*SAGROW&gt;</span>
+      t{i,1}  = s.time;
+      c(i,1)  = k;
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+cd(cd0)
+
+fprintf(<span class="string">'%d remaining data sets out of %d total.\n'</span>,i,n)
+
+<span class="keyword">for</span> k = 1:4
+  j = length(find(c==k));
+  fprintf(<span class="string">'%7s data sets %d\n'</span>,dancer{k},j)
+<span class="keyword">end</span>
+
+n = i;
+
+cd <span class="string">..</span>
+
+<span class="comment">% Limit the range to 6 seconds</span>
+tRange = 6;
+<span class="keyword">for</span> i = 1:n
+  j = find(t{i} - t{i,1} &gt; tRange );
+  <span class="keyword">if</span>( ~isempty(j) )
+    d{i}(:,j(1)+1:end)= [];
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">36 remaining data sets out of 40 total.
+  Ryoko data sets 6
+  Shaye data sets 10
+  Emily data sets 10
+Matanya data sets 10
+</pre><h2 id="4">Set up the network</h2><pre class="codeinput">numFeatures = 10; <span class="comment">% 4 quaternion, 3 rate gyros, 3 accelerometers</span>
+numHiddenUnits = 400;
+numClasses = 4; <span class="comment">% Four dancers</span>
+
+layers = [ <span class="keyword">...</span>
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,<span class="string">'OutputMode'</span>,<span class="string">'last'</span>)
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+
+options = trainingOptions(<span class="string">'adam'</span>, <span class="keyword">...</span>
+    <span class="string">'MaxEpochs'</span>,60, <span class="keyword">...</span>
+    <span class="string">'GradientThreshold'</span>,1, <span class="keyword">...</span>
+    <span class="string">'Verbose'</span>,0, <span class="keyword">...</span>
+    <span class="string">'Plots'</span>,<span class="string">'training-progress'</span>);
+</pre><pre class="codeoutput">  5&times;1 Layer array with layers:
+
+     1   ''   Sequence Input          Sequence input with 10 dimensions
+     2   ''   BiLSTM                  BiLSTM with 400 hidden units
+     3   ''   Fully Connected         4 fully connected layer
+     4   ''   Softmax                 softmax
+     5   ''   Classification Output   crossentropyex
+</pre><h2 id="5">Train the network</h2><pre class="codeinput">nTrain  = 30;
+kTrain	= randperm(n,nTrain);
+xTrain  = d(kTrain);
+yTrain  = categorical(c(kTrain));
+net     = trainNetwork(xTrain,yTrain,layers,options);
+</pre><img vspace="5" hspace="5" src="DancerNN_02.png" alt=""> <h2 id="6">Test the network</h2><pre class="codeinput">kTest   = setdiff(1:n,kTrain);
+xTest   = d(kTest);
+yTest   = categorical(c(kTest));
+yPred  	= classify(net,xTest);
+
+<span class="comment">% Calculate the classification accuracy of the predictions.</span>
+acc         = sum(yPred == yTest)./numel(yTest);
+disp(<span class="string">'Accuracy'</span>)
+disp(acc);
+</pre><pre class="codeoutput">Accuracy
+      0.33333
+
+</pre><h2 id="7">Copyright</h2><pre class="language-matlab">Copyright (c) 2019 Princeton <span class="string">Satellite</span> <span class="string">Systems</span>, Inc.
+All <span class="string">rights</span> <span class="string">reserved.</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script to train and test the dancer neural net
+% See also PlotSet, trainingOptions, categorical, trainNetwork, classify
+
+clear d t c
+
+dancer = {'Ryoko' 'Shaye', 'Emily', 'Matanya'};
+
+thisDir = fileparts(mfilename('fullpath'));
+cd0 = cd;
+cd(thisDir)
+
+%% Show one dancer's data
+cd TestData
+s   = load('Ryoko_10.mat');
+yL  = {'\omega_x' '\omega_y' '\omega_z' 'a_x' 'a_y' 'a_z'};
+PlotSet(s.time,s.state(1:6,:),'x label','Time (s)','y label',yL,'figure title',dancer{1});
+
+
+%% Load in and process the data
+n = 40;
+% Get the data and remove bad data sets
+i = 0;
+for k = 1:length(dancer)
+  for j = 1:10
+    s   = load(sprintf('%s_%d.mat',dancer{k},j));
+    cS  = size(s.state,2);
+    if( cS > 7 )
+      i       = i + 1;
+      d{i,1}  = s.state; %#ok<*SAGROW>
+      t{i,1}  = s.time;
+      c(i,1)  = k;
+    end
+  end
+end
+cd(cd0)
+
+fprintf('%d remaining data sets out of %d total.\n',i,n)
+
+for k = 1:4
+  j = length(find(c==k));
+  fprintf('%7s data sets %d\n',dancer{k},j)
+end
+
+n = i;
+
+cd ..
+
+% Limit the range to 6 seconds
+tRange = 6;
+for i = 1:n
+  j = find(t{i} - t{i,1} > tRange );
+  if( ~isempty(j) )
+    d{i}(:,j(1)+1:end)= [];
+  end
+end
+
+%% Set up the network
+numFeatures = 10; % 4 quaternion, 3 rate gyros, 3 accelerometers
+numHiddenUnits = 400;
+numClasses = 4; % Four dancers
+
+layers = [ ...
+    sequenceInputLayer(numFeatures)
+    bilstmLayer(numHiddenUnits,'OutputMode','last')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
+disp(layers)
+  
+options = trainingOptions('adam', ...
+    'MaxEpochs',60, ...
+    'GradientThreshold',1, ...
+    'Verbose',0, ...
+    'Plots','training-progress');
+  
+%% Train the network
+nTrain  = 30;
+kTrain	= randperm(n,nTrain);
+xTrain  = d(kTrain);
+yTrain  = categorical(c(kTrain));
+net     = trainNetwork(xTrain,yTrain,layers,options);
+
+%% Test the network
+kTest   = setdiff(1:n,kTrain);
+xTest   = d(kTest);
+yTest   = categorical(c(kTest));
+yPred  	= classify(net,xTest);
+
+% Calculate the classification accuracy of the predictions.
+acc         = sum(yPred == yTest)./numel(yTest);
+disp('Accuracy')
+disp(acc);
+
+
+%% Copyright
+%   Copyright (c) 2019 Princeton Satellite Systems, Inc.
+%   All rights reserved.
+
+##### SOURCE END #####
+--></body></html>

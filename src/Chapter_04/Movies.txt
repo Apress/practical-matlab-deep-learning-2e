@@ -1,0 +1,100 @@
+2001: A Space Odyssey		SciFi		PG-13
+A Star is Born		Music		PG-13
+Alien		SciFi		R
+Aliens		SciFi		R
+Amadeus		Music		R
+Apocalypse Now		War		R
+Apollo 13		Drama		PG-13
+Back to the Future		Comedy		PG-13
+Bambi		Animated		PG
+Barry Lyndon		Drama		PG-13
+Ben-Hur		Drama		PG-13
+Blade Runner		SciFi		R
+Blazing Saddles		Comedy		PG-13
+Bohemian Rhapsody		Music		PG-13
+Bonnie and Clyde		Crime		R
+Breakfast at Tiffany's		Comedy		PG
+Cabaret		Music		R
+Carousel		Music		PG
+Center Stage		Dance		PG
+Chinatown		Crime		R
+Citizen Kane		Drama		PG-13
+Das Boot		War		PG-13
+Die Hard		Drama		PG-13
+Dr. Strangelove		Comedy		PG-13
+Easy Rider		Drama		PG-13
+Fail Safe		Drama		PG-13
+Fantasia		Animated		PG
+Fargo		Crime		PG-13
+Forbidden Planet		SciFi		PG-13
+Forrest Gump		Comedy		PG-13
+Gettysburg		War		PG-13
+Gladiator		Drama		PG-13
+Gone with the Wind		War		PG-13
+Good Will Hunting		Drama		PG-13
+Green Book		Comedy		PG-13
+Harry Potter the Sorcerer's Stone		Fantasy		PG
+Henry V		War		PG-13
+Inception		SciFi		PG-13
+It's a Wonderful Life		Drama		PG
+Jaws		Drama		PG-13
+Jurassic Park		SciFi		PG-13
+King Kong		SciFi		PG-13
+Lawrence of Arabia		War		PG-13
+LBJ		Drama		PG-13
+M*A*S*H		Comedy		PG-13
+Mad Max		SciFi		PG-13
+Marooned		SciFi		PG-13
+Mary Poppins		Comedy		PG
+Mulan		Animated		PG
+North by Northwest		Drama		PG-13
+On the Waterfront		Drama		PG-13
+Paths of Glory		War		PG-13
+Platoon		War		PG-13
+Pork Chop Hill		War		PG-13
+Pretty in Pink		Romance		PG-13
+Princess Mononoki		Animated		PG-13
+Pulp Fiction		Comedy		R
+Raiders of the Lost Ark		Fantasy		PG-13
+Rashomon		Drama		PG-13
+Rocky		Drama		PG-13
+Rocky II		Drama		PG-13
+Rocky IV		Drama		PG-13
+Saving Private Ryan		War		PG-13
+Seven Samurai		Drama		PG-13
+Silence of the Lambs		Crime		PG-13
+Sleepless in Seattle		Romance		PG
+Sophie's Choice		Drama		PG-13
+Spartacus		Drama		PG-13
+Spirited Away		Animated		PG-13
+Star Wars Episode I		SciFi		PG-13
+Star Wars Episode II		SciFi		PG-13
+Star Wars Episode III		SciFi		PG-13
+Star Wars Episode IV		SciFi		PG-13
+Star Wars Episode IX		SciFi		PG-13
+Star Wars Episode V		SciFi		PG-13
+Star Wars Episode VI		SciFi		PG-13
+Star Wars Episode VII		SciFi		PG-13
+Star Wars Episode VIII		SciFi		PG-13
+Sully		Drama		PG-13
+The Aviator		Drama		PG-13
+The Breakfast Club		Romance		PG-13
+The Fellowship of the Ring		Fantasy		PG-13
+The Godfather I		Crime		PG-13
+The Godfather III		Crime		PG-13
+The Godfather III		Crime		PG-13
+The Hobbit		Fantasy		PG-13
+The Last Picture Show		Drama		PG-13
+The Longest Day		War		PG-13
+The Matrix		SciFi		PG-13
+The Princess Bride		Romance		PG
+The Return of the King		Fantasy		PG-13
+The Shining		Horror		PG-13
+The Sixth Sense		Horror		PG-13
+The Third Man		Drama		PG-13
+The Turning Point		Dance		PG-13
+The Two Towers		Fantasy		PG-13
+Titanic		Romance		PG-13
+Tootsie		Comedy		PG-13
+West Side Story		Dance		PG-13
+Whiplash		Music		PG-13
